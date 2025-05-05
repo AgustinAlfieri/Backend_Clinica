@@ -5,7 +5,7 @@ import { Medical_Insurance} from "./obra-social.entity.js";
 const Medical_Insurance_Const  = [
     new Medical_Insurance(
         'Karin Traid',
-    )
+    ) 
 ]
 
 //export class pacienteRepository implements Repository<Paciente> {
