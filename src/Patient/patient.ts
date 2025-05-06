@@ -1,6 +1,5 @@
 import { publicDecrypt } from "crypto"
 
-
 export class Patient {
     public id = crypto.randomUUID();
     public _name: string;

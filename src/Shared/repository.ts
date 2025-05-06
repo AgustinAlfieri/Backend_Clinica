@@ -3,5 +3,5 @@ export interface Repository<T> {
     findOne(obj: {id: string}): T | undefined
     add(obj: T): T | undefined
     update(obj: T): T | undefined
-    delete(obj: {id: string}): T | undefined
+    remove(obj: {id: string}): T | undefined
 }

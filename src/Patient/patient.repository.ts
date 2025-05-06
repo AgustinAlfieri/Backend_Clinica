@@ -8,15 +8,21 @@ const patiens  = [
         'Paraguay 1426',
         20,
         'Avalian',
+    ),
+    new Patient(
+        'Juan Ignacio',
+        'En donde sea',
+        200,
+        'Nitengo',
     )
 ]
 
-export class patientRepository implements Repository<Patient> {
+export class PatientRepository implements Repository<Patient> {
     public findAll(): Patient[] | undefined {
         return patiens
     }
 
-    public findOne(_patient: { id: string; }): Patient | undefined {
+    public findOne(_patient: { id: string }): Patient | undefined {
         return patiens.find((p) => p.id === _patient.id)
     }
 
@@ -34,7 +40,7 @@ export class patientRepository implements Repository<Patient> {
         return patiens[patienIndex]
     }
 
-    public delete(_patient: Patient): Patient | undefined{
+    public remove(_patient: { id: string; }): Patient | undefined{
         const patientIndex = patiens.findIndex((p) => p.id === _patient.id)
 
         if(patientIndex != -1){
