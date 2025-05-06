@@ -24,13 +24,18 @@ function sanitizePatientInput(req: Request, res: Response, next: NextFunction){
 
 function findAll(req: Request, res: Response){
     res.json({ data: repository.findAll() })
+    return
 }
 
 function findOne(req: Request, res: Response){
     const id = req.params.id
     const patient = repository.findOne({id})
-    if(!patient)
-       { return res.status(404).send({ message: 'Paciente no encontrado' }) } 
+    
+    if(!patient){ 
+        res.status(404).send({ message: 'Paciente no encontrado' })
+        return
+    }
+
     res.json({ data: patient })
 }
 
@@ -45,7 +50,8 @@ function add(req: Request, res: Response){
     )
 
     const patient = repository.add(patientInput)
-    return res.status(201).send({ message: 'Paciente creado correctamente' })
+    res.status(201).send({ message: 'Paciente creado correctamente' })
+    return
 }
 
 
@@ -54,10 +60,13 @@ function update(req: Request, res: Response){
     req.body.sanitizedInput.id = req.params.id
     const _patient = repository.update(req.body.sanitizedInput)
 
-    if(!_patient)
-        return res.status(404).send({message: 'Paciente no encontrado'})
+    if(!_patient){
+        res.status(404).send({message: 'Paciente no encontrado'})
+        return
+    }
 
-    return res.status(200).send({ message: 'Paciente modificado correctamente'})
+    res.status(200).send({ message: 'Paciente modificado correctamente'})
+    return
 }
 
 
@@ -65,10 +74,13 @@ function remove(req: Request, res: Response){
     const id =  req.params.id
     const _patient = repository.remove({ id })
 
-    if(!_patient)
-        return res.status(404).send({message: 'Paciente no encontrado'})
+    if(!_patient){
+        res.status(404).send({message: 'Paciente no encontrado'})
+        return
+    }
     
-    return res.status(200).send({message: 'Paciente eliminado correctamente'})
+    res.status(200).send({message: 'Paciente eliminado correctamente'})
+    return
 }
 
 
