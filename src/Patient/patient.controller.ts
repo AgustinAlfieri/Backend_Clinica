@@ -22,8 +22,8 @@ function sanitizePatientInput(req: Request, res: Response, next: NextFunction){
 }
 
 
-function findAll(req: Request, res: Response){
-    res.json({ data: repository.findAll() })
+async function findAll(req: Request, res: Response){
+    res.json({ data: await repository.findAll() })
     return
 }
 

@@ -3,9 +3,9 @@ import { sanitizePatientInput,  findAll, findOne, add, update, remove } from "./
 
 export const patientRouter = Router()
 
-patientRouter.get('/', findAll)
-patientRouter.get('/:id', findOne)
-patientRouter.post('/', sanitizePatientInput, add)
-patientRouter.put('/:id', sanitizePatientInput, update)
-patientRouter.patch('/:id', sanitizePatientInput, update)
-patientRouter.delete('/:id', remove)
+patientRouter.get('/findAll', findAll)
+patientRouter.get('/findOne/:id', findOne)
+patientRouter.post('/add/', sanitizePatientInput, add)
+patientRouter.put('/update/:id', sanitizePatientInput, update)
+patientRouter.patch('/update/:id', sanitizePatientInput, update)
+patientRouter.delete('/delete/:id', remove)
