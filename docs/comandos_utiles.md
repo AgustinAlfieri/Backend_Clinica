@@ -19,7 +19,7 @@ pnpm add -D -E @types/express@5.0.1 @types/node@22.15.3 tsc-watch@6.0.4 typescri
 ##### Añadir dependencias del proyecto
 
 ```
-pnpm add -E @mikro-orm/core@6.4.15 @mikro-orm/mysql@6.4.15 @mikro-orm/sql-highlighter@1.0.1 reflect-metadata@0.2.2
+pnpm add -E @mikro-orm/core@6.4.15 @mikro-orm/mysql@6.4.15 @mikro-orm/sql-highlighter@1.0.1 reflect-metadata@0.2.2 dotenv
 ```
 
 > Están indicadas las versiones exactas de cada dependencia que estámos utilizando, no las más actuales.
@@ -40,3 +40,7 @@ docker run --name db-clinica
 -p 3306:3306
 -d percona/percona-server
 ```
+
+## Conexión con la base de datos
+
+Copiar el archivo _/src/shared/database/database.env.example_ a _/src/shared/database/database.env_ y completar con las credenciales que se usaron en la creación del contenedor de Docker con MySQL.

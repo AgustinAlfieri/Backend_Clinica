@@ -17,6 +17,9 @@ importers:
       '@mikro-orm/sql-highlighter':
         specifier: 1.0.1
         version: 1.0.1
+      dotenv:
+        specifier: ^16.5.0
+        version: 16.5.0
       reflect-metadata:
         specifier: 0.2.2
         version: 0.2.2
