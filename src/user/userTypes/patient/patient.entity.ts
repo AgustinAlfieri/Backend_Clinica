@@ -1,4 +1,4 @@
-import { Entity, ManyToOne, PrimaryKey, Property } from '@mikro-orm/core';
+import { Entity, ManyToOne, PrimaryKey, Rel } from '@mikro-orm/core';
 import { User } from '../../user.entity.js';
 import { MedicalInsurance } from '../../../medicalInsurance/medicalinsurance.entity.js';
 
@@ -8,9 +8,9 @@ export class Patient extends User {
   public id = crypto.randomUUID();
 
   @ManyToOne(() => MedicalInsurance)
-  public medicalInsurance: MedicalInsurance;
+  public medicalInsurance: Rel<MedicalInsurance>;
 
-  constructor(medicalInsurance: MedicalInsurance) {
+  constructor(medicalInsurance: Rel<MedicalInsurance>) {
     super();
     this.medicalInsurance = medicalInsurance;
   }

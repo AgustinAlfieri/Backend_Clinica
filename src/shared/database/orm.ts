@@ -3,14 +3,15 @@ import { SqlHighlighter } from '@mikro-orm/sql-highlighter';
 import { MySqlDriver } from '@mikro-orm/mysql';
 import * as dotenv from 'dotenv';
 
+//TODO --> Hacer funcionar el .env
 dotenv.config();
 
 export const orm = await MikroORM.init({
   entities: ['dist/**/*.entity.js'],
   entitiesTs: ['src/**/*.entity.ts'],
-  dbName: process.env.DB_NAME,
+  dbName: 'clinica',
   driver: MySqlDriver,
-  clientUrl: `mysql://${process.env.DB_USER}:${process.env.DB_PASSWORD}@${process.env.DB_HOST}:${process.env.DB_PORT}/${process.env.DB_NAME}`,
+  clientUrl: `mysql://USER:db_clinica@localhost:3306/clinica`,
   highlighter: new SqlHighlighter(),
   debug: true,
   schemaGenerator: {
