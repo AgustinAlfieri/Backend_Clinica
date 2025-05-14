@@ -14,8 +14,10 @@ export class MedicalSpecialty extends BaseEntity {
   @ManyToMany(() => Medic, (medic) => medic.medicalSpecialty, { cascade: [Cascade.ALL], owner: true })
   medicalProfessionals = new Collection<Medic>(this);
 
-  constructor(name: string) {
+  constructor(name: string, practices: Collection<Practice>, medicalProfessionals: Collection<Medic>) {
     super();
     this.name = name;
+    this.practices = practices;
+    this.medicalProfessionals = medicalProfessionals;
   }
 }

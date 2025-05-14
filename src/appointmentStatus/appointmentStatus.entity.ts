@@ -1,23 +1,32 @@
-import { Entity, OneToMany, ManyToMany, Property, Cascade, Collection, ManyToOne } from '@mikro-orm/core';
+import { Entity, Rel, Property, ManyToOne, DateTimeType } from '@mikro-orm/core';
 import { BaseEntity } from '../shared/base.entity.js';
 import { TypeAppointmentStatus } from '../typeAppointmentStatus/typeAppointmentStatus.entity.js';
+import { Appointment } from '../appointment/appointment.entity.js';
 
 @Entity()
 export class AppointmentStatus extends BaseEntity {
-  @Property({ nullable: false })
-  date!: string;
+  @Property({ nullable: false, type: 'datetime' })
+  date!: DateTimeType;
 
   @Property({ nullable: false })
   observations!: string;
 
-  @ManyToOne( ()  => TypeAppointmentStatus)
-  typeAppointmentStatus: TypeAppointmentStatus;
+  @ManyToOne(() => TypeAppointmentStatus)
+  typeAppointmentStatus: Rel<TypeAppointmentStatus>;
 
-  constructor( date: string, observations: string, typeAppoitmentStatus: TypeAppointmentStatus){
+  @ManyToOne(() => Appointment)
+  appointment: Rel<Appointment>;
+
+  constructor(
+    date: DateTimeType,
+    observations: string,
+    typeAppoitmentStatus: TypeAppointmentStatus,
+    appointment: Rel<Appointment>
+  ) {
     super();
     this.date = date;
     this.observations = observations;
     this.typeAppointmentStatus = typeAppoitmentStatus;
+    this.appointment = appointment;
   }
-
 }

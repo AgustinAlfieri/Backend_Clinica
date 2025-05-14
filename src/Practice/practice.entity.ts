@@ -2,6 +2,7 @@ import { Collection, Entity, ManyToMany, ManyToOne, Cascade, Property } from '@m
 import { BaseEntity } from '../shared/base.entity.js';
 import { MedicalSpecialty } from '../medicalSpecialty/medicalSpecialty.entity.js';
 import { MedicalInsurance } from '../medicalInsurance/medicalinsurance.entity.js';
+import { Appointment } from '../appointment/appointment.entity.js';
 
 @Entity()
 export class Practice extends BaseEntity {
@@ -20,10 +21,21 @@ export class Practice extends BaseEntity {
   })
   medicalInsurances = new Collection<MedicalInsurance>(this);
 
-  constructor(name: string, description: string, medicalSpecialty: MedicalSpecialty) {
+  @ManyToMany(() => Appointment, (appointment) => appointment.practices)
+  appointments = new Collection<Appointment>(this);
+
+  constructor(
+    name: string,
+    description: string,
+    medicalSpecialty: MedicalSpecialty,
+    medicalInsurances: Collection<MedicalInsurance>,
+    appointments: Collection<Appointment>
+  ) {
     super();
     this.name = name;
     this.description = description;
     this.medicalSpecialty = medicalSpecialty;
+    this.medicalInsurances = medicalInsurances;
+    this.appointments = appointments;
   }
 }

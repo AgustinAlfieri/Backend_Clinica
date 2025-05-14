@@ -7,6 +7,12 @@ export class TypeAppointmentStatus extends BaseEntity {
   @Property({ nullable: false })
   name!: string;
 
-  @OneToMany( () => AppointmentStatus, ap => ap.typeAppointmentStatus)
-  appointmentStatus = new Collection<AppointmentStatus>(this)
+  @OneToMany(() => AppointmentStatus, (ap) => ap.typeAppointmentStatus)
+  appointmentStatus = new Collection<AppointmentStatus>(this);
+
+  constructor(name: string, appointmentStatus: Collection<AppointmentStatus>) {
+    super();
+    this.name = name;
+    this.appointmentStatus = appointmentStatus;
+  }
 }

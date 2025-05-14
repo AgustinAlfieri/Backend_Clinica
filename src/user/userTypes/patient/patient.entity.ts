@@ -1,6 +1,7 @@
-import { Entity, ManyToOne, PrimaryKey, Rel } from '@mikro-orm/core';
+import { Entity, ManyToOne, PrimaryKey, Rel, OneToMany, Cascade, Collection } from '@mikro-orm/core';
 import { User } from '../../user.entity.js';
 import { MedicalInsurance } from '../../../medicalInsurance/medicalinsurance.entity.js';
+import { Appointment } from '../../../appointment/appointment.entity.js';
 
 @Entity()
 export class Patient extends User {
@@ -10,8 +11,12 @@ export class Patient extends User {
   @ManyToOne(() => MedicalInsurance)
   public medicalInsurance: Rel<MedicalInsurance>;
 
-  constructor(medicalInsurance: Rel<MedicalInsurance>) {
+  @OneToMany(() => Appointment, (appointment) => appointment.patient, { cascade: [Cascade.ALL] })
+  appointments = new Collection<Appointment>(this);
+
+  constructor(medicalInsurance: Rel<MedicalInsurance>, appointments: Collection<Appointment>) {
     super();
     this.medicalInsurance = medicalInsurance;
+    this.appointments = appointments;
   }
 }

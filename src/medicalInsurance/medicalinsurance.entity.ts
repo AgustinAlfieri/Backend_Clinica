@@ -14,8 +14,10 @@ export class MedicalInsurance extends BaseEntity {
   @OneToMany(() => Patient, (patient) => patient.medicalInsurance, { cascade: [Cascade.ALL] })
   clients = new Collection<Patient>(this);
 
-  constructor(name: string) {
+  constructor(name: string, coveredPractices: Collection<Practice>, clients: Collection<Patient>) {
     super();
     this.name = name;
+    this.coveredPractices = coveredPractices;
+    this.clients = clients;
   }
 }
