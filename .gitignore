@@ -28,3 +28,6 @@ dist/**/*
 
 ## built vscode extensions
 *.vsix
+
+##Ignore .http 
+.http
