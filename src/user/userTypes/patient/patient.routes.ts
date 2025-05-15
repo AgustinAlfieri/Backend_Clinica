@@ -6,5 +6,5 @@ export const patientRouter = Router();
 patientRouter.get('/findAll', findAll);
 patientRouter.get('/findOne/:id', findOne);
 patientRouter.post('/create', sanitizeInputPatient, create);
-patientRouter.put('/update/:id', sanitizeInputPatient, update);
+patientRouter.post('/update/:id', sanitizeInputPatient, update);
 patientRouter.delete('/remove/:id', remove);

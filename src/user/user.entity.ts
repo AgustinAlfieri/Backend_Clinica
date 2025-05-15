@@ -2,11 +2,15 @@ import { Entity, Property } from '@mikro-orm/core';
 import { BaseEntity } from '../shared/base.entity.js';
 
 export class User extends BaseEntity {
-  dni!: string;
+  @Property()
+  public dni!: string;
 
-  name!: string;
+  @Property()
+  public name!: string;
 
-  email!: string;
+  @Property()
+  public email!: string;
 
-  telephone?: string;
+  @Property()
+  public telephone?: string;
 }

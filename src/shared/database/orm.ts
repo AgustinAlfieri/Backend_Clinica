@@ -11,7 +11,7 @@ export const orm = await MikroORM.init({
   entitiesTs: ['src/**/*.entity.ts'],
   dbName: 'clinica',
   driver: MySqlDriver,
-  clientUrl: `mysql://usr_db_clinica:db_clinica@localhost:3306/clinica`,
+  clientUrl: `mysql://root:Admin1243_@localhost:3306/clinica`,
   highlighter: new SqlHighlighter(),
   debug: true,
   schemaGenerator: {

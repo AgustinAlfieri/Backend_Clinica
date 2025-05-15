@@ -6,7 +6,7 @@ import { User } from '../../user.entity.js';
 @Entity()
 export class Patient extends User {
   @PrimaryKey()
-  public id = crypto.randomUUID();
+  public id: string = crypto.randomUUID();
 
   @ManyToOne(() => MedicalInsurance)
   public medicalInsurance: Rel<MedicalInsurance>;
