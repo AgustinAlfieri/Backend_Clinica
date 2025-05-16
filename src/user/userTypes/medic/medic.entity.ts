@@ -13,11 +13,4 @@ export class Medic extends User {
 
   @OneToMany(() => Appointment, (appointment) => appointment.medic, { cascade: [Cascade.ALL] })
   appointments = new Collection<Appointment>(this);
-
-  constructor(medicalSpecialty: Collection<MedicalSpecialty>, license: string, appointments: Collection<Appointment>) {
-    super();
-    this.medicalSpecialty = medicalSpecialty;
-    this.license = license;
-    this.appointments = appointments;
-  }
 }

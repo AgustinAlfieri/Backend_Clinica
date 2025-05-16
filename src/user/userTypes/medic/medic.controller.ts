@@ -13,13 +13,14 @@ function sanitizeInputMedic(req: Request, res: Response, next: NextFunction){
         telephone: req.body.telephone,
         license: req.body.license,
         m_specialty: req.body.m_specialty,
-        appointments: req.body.appointments
     }
-
-    for(const param in req.body.sanitizedInput)
-        if(param == undefined)
-            delete req.body.sanitizedInput[param];
-
+    for (const param in req.body.sanitizedInput) {
+        if (
+            req.body.sanitizedInput[param] === undefined ||
+            req.body.sanitizedInput[param] === null ||
+            req.body.sanitizedInput[param] === ''
+        ) { delete req.body.sanitizedInput[param]; }
+  }
     next();
 }
 
@@ -46,7 +47,7 @@ async function findAll(req: Request, res: Response) {
 
 async function findOne(req: Request, res: Response){
     try{
-        const id = req.body.sanitizedInput.id;
+        const id = req.params.id;
         const medic = await em.findOne(Medic, id, { populate: ['medicalSpecialty','appointments'] });
 
         if(medic instanceof Medic){
@@ -56,7 +57,7 @@ async function findOne(req: Request, res: Response){
         } else {
             res.
             status(404)
-            .send({ message: 'Error al buscar medico' });    
+            .send({ message: 'Medico no encontrado' });    
         }
 
     } catch(error){
@@ -65,7 +66,7 @@ async function findOne(req: Request, res: Response){
 
         res.
             status(500)
-            .send({ message: 'Error al buscar paciente'});
+            .send({ message: 'Error al buscar medico'});
     }
 
 }
@@ -73,8 +74,10 @@ async function findOne(req: Request, res: Response){
 
 async function create(req: Request, res: Response) {
     try{
-        const { dni, name, email, telephone, license, m_specialty, appointments } = req.body.sanitizedInput;
+        const { dni, name, email, telephone, license, m_specialty } = req.body.sanitizedInput;
         const specialty = await em.findOneOrFail(MedicalSpecialty, m_specialty);
+
+        console.log(specialty);
 
         const medic = em.create(Medic, {
             dni,
@@ -82,8 +85,7 @@ async function create(req: Request, res: Response) {
             email,
             telephone,
             license,
-            medicalSpecialty: specialty,
-            appointments
+            medicalSpecialty: specialty
         })
 
         await em.flush();
@@ -97,23 +99,23 @@ async function create(req: Request, res: Response) {
 
         res.
             status(500)
-            .send({ message: 'Error al crear paciente'});
+            .send({ message: 'Error al crear medico'});
     }
 }
 
 
 async function update(req: Request, res: Response) {
     try{   
-        const id = req.params.id;
-        const medic = await em.find(Medic, { id });
+        const id: string = req.params.id;
+        const medic = await em.findOneOrFail(Medic, {id});
 
-        em.assign(medic, req.body.sanitizedInput);
+        em.assign(medic, req.body);
 
         await em.flush();
 
         res.
             status(200)
-            .send({ message: 'Medico creado correctamente', data: medic });
+            .send({ message: 'Medico modificado correctamente', data: medic });
 
     } catch(error){
         //TODO: Logger
@@ -121,7 +123,7 @@ async function update(req: Request, res: Response) {
 
         res.
             status(500)
-            .send({ message: 'Error al crear paciente'});
+            .send({ message: 'Error al modificar medico'});
     }
 }
 
@@ -142,7 +144,7 @@ async function remove(req: Request, res: Response) {
 
         res.
             status(500)
-            .send({ message: 'Error al crear paciente'});
+            .send({ message: 'Error al eliminar medico'});
     }
 
 }
