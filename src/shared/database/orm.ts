@@ -9,9 +9,8 @@ dotenv.config();
 export const orm = await MikroORM.init({
   entities: ['dist/**/*.entity.js'],
   entitiesTs: ['src/**/*.entity.ts'],
-  dbName: 'clinica',
   driver: MySqlDriver,
-  clientUrl: `mysql://root:Admin1243_@localhost:3306/clinica`,
+  clientUrl: `mysql://admin:Admin1243_@localhost:3306/dbclinica`,
   highlighter: new SqlHighlighter(),
   debug: true,
   schemaGenerator: {
