@@ -3,6 +3,9 @@ import { NextFunction, Request, Response } from "express";
 import { Medic } from "./medic.entity.js";
 import { populate } from "dotenv";
 import { MedicalSpecialty } from "../../../medicalSpecialty/medicalSpecialty.entity.js";
+import { AppError } from "../../../shared/errorManagment/appError.js";
+import { STATUS_CODES } from "http";
+import { StatusCodes } from "http-status-codes";
 
 //TODO: Improve function
 function sanitizeInputMedic(req: Request, res: Response, next: NextFunction){
@@ -28,56 +31,29 @@ const em = orm.em;
 
 
 async function findAll(req: Request, res: Response) {
-    try{
         const medics = await em.find(Medic, {}, { populate: ['medicalSpecialty','appointments'] });
 
-        res.
-            status(200)
-            .send({message: 'Medicos encontrados: ', data: medics});
-    } catch(error){
-        //TODO: Logger
-        console.log(error);
+        if(!medics) 
+            throw new AppError("Medico no encontrado", StatusCodes.NOT_FOUND); 
 
-        res.
-            status(500)
-            .send({ message: 'Error al buscar medicos'});
-    }
+        res.status(StatusCodes.OK).send(medics);
 }
 
 
 async function findOne(req: Request, res: Response){
-    try{
         const id = req.params.id;
         const medic = await em.findOne(Medic, id, { populate: ['medicalSpecialty','appointments'] });
 
-        if(medic instanceof Medic){
-            res.
-                status(200)
-                .send({ message: 'Medico encontrado: ', data: medic });
-        } else {
-            res.
-            status(404)
-            .send({ message: 'Medico no encontrado' });    
-        }
-
-    } catch(error){
-        //TODO: Logger
-        console.log(error);
-
-        res.
-            status(500)
-            .send({ message: 'Error al buscar medico'});
-    }
-
+        if(!medic)
+            throw new AppError("Medico no encontrado", StatusCodes.NOT_FOUND);
+            
+        res.status(StatusCodes.OK).send(medic);
 }
 
 
 async function create(req: Request, res: Response) {
-    try{
         const { dni, name, email, telephone, license, m_specialty } = req.body.sanitizedInput;
         const specialty = await em.findOneOrFail(MedicalSpecialty, m_specialty);
-
-        console.log(specialty);
 
         const medic = em.create(Medic, {
             dni,
@@ -90,63 +66,35 @@ async function create(req: Request, res: Response) {
 
         await em.flush();
 
-        res.
-            status(200)
-            .send({message: 'Medico creado correctamente', data: medic });
-    } catch(error){
-        //TODO: Logger
-        console.log(error);
+        if(!medic)
+            throw new AppError("Error al crear medico", StatusCodes.INTERNAL_SERVER_ERROR);
 
         res.
-            status(500)
-            .send({ message: 'Error al crear medico'});
-    }
+            status(StatusCodes.CREATED)
+            .send(medic);
 }
 
 
 async function update(req: Request, res: Response) {
-    try{   
         const id: string = req.params.id;
         const medic = await em.findOneOrFail(Medic, {id});
 
-        em.assign(medic, req.body);
+        const medicUpdated = em.assign(medic, req.body);
+        
+        if(!medicUpdated) throw new AppError("Error al modificar medico", StatusCodes.NOT_MODIFIED);
 
         await em.flush();
 
-        res.
-            status(200)
-            .send({ message: 'Medico modificado correctamente', data: medic });
-
-    } catch(error){
-        //TODO: Logger
-        console.log(error);
-
-        res.
-            status(500)
-            .send({ message: 'Error al modificar medico'});
-    }
+        res.status(StatusCodes.OK).send(medic);
 }
 
 async function remove(req: Request, res: Response) {
-    try{
         const id = req.params.id;
         const medicRemove = em.getReference(Medic, id);
 
         await em.removeAndFlush(medicRemove);
 
-        res.
-            status(200)
-            .send({ message: 'Medico eliminado correctamente' });
-
-    } catch(error){
-        //TODO: Logger
-        console.log(error);
-
-        res.
-            status(500)
-            .send({ message: 'Error al eliminar medico'});
-    }
-
+        res.status(StatusCodes.ACCEPTED).send();
 }
 
 
