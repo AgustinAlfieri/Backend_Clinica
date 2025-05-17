@@ -1,21 +1,19 @@
 import { MikroORM } from '@mikro-orm/core';
 import { SqlHighlighter } from '@mikro-orm/sql-highlighter';
-
 import { MySqlDriver } from '@mikro-orm/mysql';
+import * as dotenv from 'dotenv';
+
+//TODO --> Hacer funcionar el .env
+dotenv.config();
 
 export const orm = await MikroORM.init({
   entities: ['dist/**/*.entity.js'],
   entitiesTs: ['src/**/*.entity.ts'],
-  dbName: 'heroclash4geeks',
-
-  // El profe puso type: 'mysql'
-  // type: 'mysql',
+  dbName: 'clinica',
   driver: MySqlDriver,
-
-  clientUrl: 'mysql://dsw:dsw@localhost:3306/heroclash4geeks',
+  clientUrl: `mysql://root:Admin1243_@localhost:3306/clinica`,
   highlighter: new SqlHighlighter(),
   debug: true,
-  // Hasta acá es configuración básica
   schemaGenerator: {
     //never in production
     disableForeignKeys: true,
@@ -27,6 +25,4 @@ export const orm = await MikroORM.init({
 export const syncSchema = async () => {
   const generator = orm.getSchemaGenerator();
   await generator.updateSchema();
-  // await generator.dropSchema();
-  // await generator.createSchema();
 };
