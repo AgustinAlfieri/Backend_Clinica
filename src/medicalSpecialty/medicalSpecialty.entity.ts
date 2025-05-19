@@ -1,6 +1,6 @@
 import { Cascade, Collection, Entity, ManyToMany, OneToMany, Property } from '@mikro-orm/core';
 import { BaseEntity } from '../shared/base.entity.js';
-import { Practice } from '../practice/practice.entity.js';
+import { Practice } from '../Practice/practice.entity.js';
 import { Medic } from '../user/userTypes/medic/medic.entity.js';
 
 @Entity()
