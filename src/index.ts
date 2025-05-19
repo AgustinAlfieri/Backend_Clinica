@@ -6,6 +6,7 @@ import { patientRouter } from './user/userTypes/patient/patient.routes.js';
 import { routerMedic } from './user/userTypes/medic/medic.routes.js';
 import { errorHandler } from './shared/middlewares/errorHandler.js';
 import { medicalSpecialtyRouter } from './medicalSpecialty/medicalSpecialty.routes.js';
+import { typeAppointmentStatusRouter } from './typeAppointmentStatus/typeAppointmentStatus.routes.js';
 
 const app = express();
 app.use(express.json());
@@ -17,6 +18,7 @@ app.use((req, res, next) => {
 app.use('/app/v1/patient', patientRouter);
 app.use('/app/v1/medic', routerMedic);
 app.use('/app/v1/medicalSpecialty', medicalSpecialtyRouter);
+app.use('/app/v1/typeAppointmentStatus', typeAppointmentStatusRouter);
 
 await syncSchema(); // Never in production
 
