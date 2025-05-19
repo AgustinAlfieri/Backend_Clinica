@@ -31,10 +31,24 @@ async function findOne(req: Request, res: Response) {
   throw new AppError('Not implemented', StatusCodes.BAD_GATEWAY);
 }
 async function update(req: Request, res: Response) {
-  throw new AppError('Not implemented', StatusCodes.BAD_GATEWAY);
+  const id: string = req.params.id;
+  const medicalSpecialty = await em.findOneOrFail(MedicalSpecialty, { id });
+
+  const medicalSpecialtyUpdated = em.assign(medicalSpecialty, req.body.sanitizedInput);
+
+  if (!medicalSpecialtyUpdated)
+    throw new AppError('Error al modificar la especialidad médica', StatusCodes.NOT_MODIFIED);
+
+  await em.flush();
+
+  res.status(StatusCodes.OK).send(medicalSpecialtyUpdated);
 }
+
 async function create(req: Request, res: Response) {
-  throw new AppError('Not implemented', StatusCodes.BAD_GATEWAY);
+  const medicalSpecialty = em.create(MedicalSpecialty, req.body.sanitizedInput);
+  await em.flush();
+  if (!medicalSpecialty) throw new AppError('Error al crear la especialidad médica', StatusCodes.INTERNAL_SERVER_ERROR);
+  res.status(StatusCodes.CREATED).send(medicalSpecialty);
 }
 async function remove(req: Request, res: Response) {
   throw new AppError('Not implemented', StatusCodes.BAD_GATEWAY);

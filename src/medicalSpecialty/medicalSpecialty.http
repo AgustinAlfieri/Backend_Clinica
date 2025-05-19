@@ -1,0 +1,18 @@
+### GET ALL
+GET http://localhost:3000/app/v1/medicalSpecialty/findAll
+
+### CREATE
+POST http://localhost:3000/app/v1/medicalSpecialty/create
+Content-Type: application/json
+
+{
+  "name": "Medicina Familiar"
+}
+
+### UPDATE
+POST http://localhost:3000/app/v1/medicalSpecialty/update/e7e0e958-a27a-45f5-ad87-6919d5e8e8ee
+Content-Type: application/json
+
+{
+  "name": "Cirugía"
+}
