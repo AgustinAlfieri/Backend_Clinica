@@ -1,6 +1,6 @@
-import { orm } from "../shared/database/orm";
+import { orm } from "../shared/database/orm.js";
 import {NextFunction, Request, Response} from "express";
-import { TypeAppointmentStatus } from "./typeAppointmentStatus.entity";
+import { TypeAppointmentStatus } from "./typeAppointmentStatus.entity.js";
 
 const em = orm.em;
 
