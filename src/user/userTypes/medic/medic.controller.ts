@@ -19,9 +19,7 @@ function sanitizeInputMedic(req: Request, res: Response, next: NextFunction){
     }
     for (const param in req.body.sanitizedInput) {
         if (
-            req.body.sanitizedInput[param] === undefined ||
-            req.body.sanitizedInput[param] === null ||
-            req.body.sanitizedInput[param] === ''
+            req.body.sanitizedInput[param] === undefined
         ) { delete req.body.sanitizedInput[param]; }
   }
     next();
