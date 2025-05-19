@@ -29,4 +29,4 @@ dist/**/*
 *.vsix
 
 ##Ignore .http 
-.http
+*.http
