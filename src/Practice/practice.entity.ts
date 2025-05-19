@@ -3,6 +3,7 @@ import { BaseEntity } from '../shared/base.entity.js';
 import { MedicalSpecialty } from '../medicalSpecialty/medicalSpecialty.entity.js';
 import { MedicalInsurance } from '../medicalInsurance/medicalinsurance.entity.js';
 import { Appointment } from '../appointment/appointment.entity.js';
+import { Rel } from '@mikro-orm/core';
 
 @Entity()
 export class Practice extends BaseEntity {
@@ -13,7 +14,7 @@ export class Practice extends BaseEntity {
   public description: string;
 
   @ManyToOne(() => MedicalSpecialty)
-  public medicalSpecialty: MedicalSpecialty;
+  public medicalSpecialty: Rel<MedicalSpecialty>;
 
   @ManyToMany(() => MedicalInsurance, (medical_i) => medical_i.coveredPractices, {
     cascade: [Cascade.ALL],
@@ -27,7 +28,7 @@ export class Practice extends BaseEntity {
   constructor(
     name: string,
     description: string,
-    medicalSpecialty: MedicalSpecialty,
+    medicalSpecialty: Rel<MedicalSpecialty>,
     medicalInsurances: Collection<MedicalInsurance>,
     appointments: Collection<Appointment>
   ) {

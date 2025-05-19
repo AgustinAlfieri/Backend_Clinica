@@ -1,12 +1,12 @@
-import { Entity, ManyToOne, PrimaryKey, Rel, OneToMany, Cascade, Collection } from '@mikro-orm/core';
-import { User } from '../../user.entity.js';
+import { Entity, ManyToOne, PrimaryKey, Rel, OneToMany, Cascade, Collection } from '@mikro-orm/core'
 import { MedicalInsurance } from '../../../medicalInsurance/medicalinsurance.entity.js';
 import { Appointment } from '../../../appointment/appointment.entity.js';
+import { User } from '../../user.entity.js';
 
 @Entity()
 export class Patient extends User {
   @PrimaryKey()
-  public id = crypto.randomUUID();
+  public id: string = crypto.randomUUID();
 
   @ManyToOne(() => MedicalInsurance)
   public medicalInsurance: Rel<MedicalInsurance>;
