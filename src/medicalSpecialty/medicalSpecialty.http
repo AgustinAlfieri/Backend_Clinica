@@ -1,5 +1,11 @@
-### GET ALL
+@id = 8dee950f-cfc7-49e8-a2e6-6dbbf2fc5f66
+
+### FIND ALL
 GET http://localhost:3000/app/v1/medicalSpecialty/findAll
+
+### FIND ONE
+GET http://localhost:3000/app/v1/medicalSpecialty/findOne/{{id}}
+
 
 ### CREATE
 POST http://localhost:3000/app/v1/medicalSpecialty/create
@@ -10,9 +16,14 @@ Content-Type: application/json
 }
 
 ### UPDATE
-POST http://localhost:3000/app/v1/medicalSpecialty/update/e7e0e958-a27a-45f5-ad87-6919d5e8e8ee
+POST http://localhost:3000/app/v1/medicalSpecialty/update/{{id}}
+
 Content-Type: application/json
 
 {
   "name": "Cirugía"
 }
+
+### REMOVE
+DELETE http://localhost:3000/app/v1/medicalSpecialty/remove/{{id}}
+

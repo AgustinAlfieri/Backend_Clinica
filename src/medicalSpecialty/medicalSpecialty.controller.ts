@@ -10,7 +10,7 @@ function sanitizeInputMedicalSpecialty(req: Request, _: Response, next: NextFunc
   req.body.sanitizedInput = {
     name: req.body.name,
     practices: req.body.practices,
-    medics: req.body.medics
+    medicalProfessionals: req.body.medicalProfessionals
   };
   Object.keys(req.body.sanitizedInput).forEach((key) => {
     if (req.body.sanitizedInput[key] === undefined) {
@@ -28,11 +28,19 @@ async function findAll(req: Request, res: Response) {
 }
 
 async function findOne(req: Request, res: Response) {
-  throw new AppError('Not implemented', StatusCodes.BAD_GATEWAY);
+  const id = req.params.id;
+  const medicalSpecialty = await em.findOne(MedicalSpecialty, id, {
+    populate: ['practices', 'medicalProfessionals']
+  });
+
+  if (!medicalSpecialty) throw new AppError('Especialidad médica no encontrada', StatusCodes.NOT_FOUND);
+
+  res.status(StatusCodes.OK).send(medicalSpecialty);
 }
+
 async function update(req: Request, res: Response) {
-  const id: string = req.params.id;
-  const medicalSpecialty = await em.findOneOrFail(MedicalSpecialty, { id });
+  const id = req.params.id;
+  const medicalSpecialty = await em.findOneOrFail(MedicalSpecialty, id);
 
   const medicalSpecialtyUpdated = em.assign(medicalSpecialty, req.body.sanitizedInput);
 
@@ -51,7 +59,12 @@ async function create(req: Request, res: Response) {
   res.status(StatusCodes.CREATED).send(medicalSpecialty);
 }
 async function remove(req: Request, res: Response) {
-  throw new AppError('Not implemented', StatusCodes.BAD_GATEWAY);
+  const id = req.params.id;
+  const deleteMedicalSpecialty = em.getReference(MedicalSpecialty, id);
+
+  await em.removeAndFlush(deleteMedicalSpecialty);
+
+  res.status(StatusCodes.ACCEPTED).send('Especialidad médica eliminada');
 }
 
 export { sanitizeInputMedicalSpecialty, findAll, findOne, update, create, remove };
