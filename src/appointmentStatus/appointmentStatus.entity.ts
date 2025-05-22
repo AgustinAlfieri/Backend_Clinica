@@ -5,7 +5,7 @@ import { Appointment } from '../appointment/appointment.entity.js';
 
 @Entity()
 export class AppointmentStatus extends BaseEntity {
-  @Property({ nullable: false, type: 'datetime' })
+  @Property({ nullable: false, type: "datetime" })
   date!: DateTimeType;
 
   @Property({ nullable: false })
@@ -16,6 +16,9 @@ export class AppointmentStatus extends BaseEntity {
 
   @ManyToOne(() => Appointment)
   appointment: Rel<Appointment>;
+
+  @Property({nullable: false,default: true})
+  isActive!: boolean;
 
   constructor(
     date: DateTimeType,
