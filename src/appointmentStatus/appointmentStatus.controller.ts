@@ -52,7 +52,7 @@ async function create(req: Request, res: Response){
           id: idTypeAppointmentStatus});
       if (!typeAppointmentStatus) throw new AppError('Type appointment status dont exist', StatusCodes.BAD_REQUEST);
       const appointmentStatus = new AppointmentStatus(
-          req.body.sanitizedInput.date,
+          new Date(),
           req.body.sanitizedInput.observations,
           typeAppointmentStatus,
           req.body.sanitizedInput.appointment // can be null or incomplete during development
@@ -73,8 +73,8 @@ async function update(req: Request, res: Response){
         id,
         isActive: true,
       });
-      em.assign(appointmentStatus, req.body.sanitizedInput); // The official documentation of MikroOrm says "assign(entity, data) assigns the values of data to entity in-place. It returns the same entity, so you don’t need to reassign it.  "
-      await em.flush();
+        em.assign(appointmentStatus, req.body.sanitizedInput); // The official documentation of MikroOrm says "assign(entity, data) assigns the values of data to entity in-place. It returns the same entity, so you don’t need to reassign it.  "
+        await em.flush();
       res.status(StatusCodes.OK).send(appointmentStatus);
     } catch (error) {
       throw new AppError(
