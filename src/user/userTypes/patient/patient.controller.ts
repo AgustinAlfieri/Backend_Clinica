@@ -13,6 +13,7 @@ function sanitizeInputPatient(req: Request, res: Response, next: NextFunction) {
     email: req.body.email,
     password: req.body.password,
     telephone: req.body.telephone,
+    insuranceNumber: req.body.insuranceNumber,
     medicalInsurance: req.body.medicalInsurance
   };
 
@@ -68,9 +69,17 @@ async function update(req: Request, res: Response) {
 
 async function create(req: Request, res: Response) {
   try {
-    const { dni, name, email, password, telephone, medicalInsurance } = req.body.sanitizedInput;
+    const { dni, name, email, password, telephone, insuranceNumber, medicalInsurance } = req.body.sanitizedInput;
     const m_insurance = await em.findOneOrFail(MedicalInsurance, medicalInsurance);
-    const patient = em.create(Patient, { dni, name, email, password, telephone, medicalInsurance: m_insurance });
+    const patient = em.create(Patient, {
+      dni,
+      name,
+      email,
+      password,
+      telephone,
+      insuranceNumber,
+      medicalInsurance: m_insurance
+    });
 
     await em.flush();
 
