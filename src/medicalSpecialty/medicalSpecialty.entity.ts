@@ -5,8 +5,8 @@ import { Medic } from '../user/userTypes/medic/medic.entity.js';
 
 @Entity()
 export class MedicalSpecialty extends BaseEntity {
-  @Property()
-  private name: string;
+  @Property({ unique: true })
+  name!: string;
 
   @OneToMany(() => Practice, (practice) => practice.medicalSpecialty, { cascade: [Cascade.ALL] })
   practices = new Collection<Practice>(this);

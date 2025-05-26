@@ -7,11 +7,11 @@ import { Rel } from '@mikro-orm/core';
 
 @Entity()
 export class Practice extends BaseEntity {
-  @Property()
-  public name: string;
+  @Property({ unique: true })
+  public name!: string;
 
   @Property()
-  public description: string;
+  public description?: string;
 
   @ManyToOne(() => MedicalSpecialty)
   public medicalSpecialty: Rel<MedicalSpecialty>;
@@ -27,10 +27,10 @@ export class Practice extends BaseEntity {
 
   constructor(
     name: string,
-    description: string,
     medicalSpecialty: Rel<MedicalSpecialty>,
     medicalInsurances: Collection<MedicalInsurance>,
-    appointments: Collection<Appointment>
+    appointments: Collection<Appointment>,
+    description?: string
   ) {
     super();
     this.name = name;

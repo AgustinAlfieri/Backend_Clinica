@@ -19,7 +19,7 @@ import { Practice } from '../practice/practice.entity.js';
 @Entity()
 export class Appointment extends BaseEntity {
   @Property({ nullable: false, type: 'datetime' })
-  date!: DateTimeType;
+  appointmentDate!: DateTimeType;
 
   @OneToMany(() => AppointmentStatus, (status) => status.appointment, { cascade: [Cascade.ALL] })
   statusList = new Collection<AppointmentStatus>(this);
@@ -43,7 +43,7 @@ export class Appointment extends BaseEntity {
   practices = new Collection<Practice>(this);
 
   constructor(
-    date: DateTimeType,
+    appointmentDate: DateTimeType,
     statusList: Collection<AppointmentStatus>,
     patient: Rel<Patient>,
     medic: Rel<Medic>,
@@ -51,7 +51,7 @@ export class Appointment extends BaseEntity {
     practices: Collection<Practice>
   ) {
     super();
-    this.date = date;
+    this.appointmentDate = appointmentDate;
     this.statusList = statusList;
     this.patient = patient;
     this.medic = medic;

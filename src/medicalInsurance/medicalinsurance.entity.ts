@@ -5,8 +5,8 @@ import { Patient } from '../user/userTypes/patient/patient.entity.js';
 
 @Entity()
 export class MedicalInsurance extends BaseEntity {
-  @Property()
-  private name: string;
+  @Property({ unique: true })
+  name!: string;
 
   @ManyToMany(() => Practice, (practice) => practice.medicalInsurances)
   coveredPractices = new Collection<Practice>(this);

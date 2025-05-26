@@ -5,27 +5,23 @@ import { Appointment } from '../appointment/appointment.entity.js';
 
 @Entity()
 export class AppointmentStatus extends BaseEntity {
-  @Property({ nullable: false, type: DateTimeType })
+  @Property({ type: DateTimeType })
   date!: Date;
 
-  @Property({ nullable: false })
-  observations!: string;
+  @Property()
+  observations?: string;
 
   @ManyToOne(() => TypeAppointmentStatus)
   typeAppointmentStatus: Rel<TypeAppointmentStatus>;
 
-  @ManyToOne(() => Appointment, { nullable: true })
-  // The appointment can be null or incomplete during development
-  appointment: Rel<Appointment> | null;
-
-  @Property({ nullable: false, default: true })
-  isActive!: boolean;
+  @ManyToOne(() => Appointment)
+  appointment: Rel<Appointment>;
 
   constructor(
     date: Date,
-    observations: string,
     typeAppoitmentStatus: TypeAppointmentStatus,
-    appointment: Rel<Appointment> | null = null // The appointment can be null or incomplete during development
+    appointment: Rel<Appointment>,
+    observations?: string
   ) {
     super();
     this.date = date;
