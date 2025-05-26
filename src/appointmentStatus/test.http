@@ -1,0 +1,16 @@
+@id = 1
+###FIND ALL
+GET http://localhost:3000/app/v1/appointmentStatus/findAll
+
+### FIND ONE
+GET http://localhost:3000/app/v1/appointmentStatus/findOne/{{id}}
+
+### CREATE
+POST http://localhost:3000/app/v1/appointmentStatus/create
+Content-Type: application/json
+
+{
+  "date": "2025-05-23 15:30:00",
+  "observations": "padrsdcas",
+  "idTypeAppointmentStatus":"e259834c-ee0c-4e49-847e-4f9f46379028",
+  "appointment": null}
