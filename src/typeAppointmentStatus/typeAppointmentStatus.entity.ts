@@ -4,13 +4,13 @@ import { AppointmentStatus } from '../appointmentStatus/appointmentStatus.entity
 
 @Entity()
 export class TypeAppointmentStatus extends BaseEntity {
-  @Property({ nullable: false })
+  @Property({ unique: true })
   name!: string;
 
   @OneToMany(() => AppointmentStatus, (ap) => ap.typeAppointmentStatus)
-  appointmentStatus = new Collection<AppointmentStatus>(this);
+  appointmentStatus? = new Collection<AppointmentStatus>(this);
 
-  constructor(name: string, appointmentStatus: Collection<AppointmentStatus>) {
+  constructor(name: string, appointmentStatus?: Collection<AppointmentStatus>) {
     super();
     this.name = name;
     this.appointmentStatus = appointmentStatus;
