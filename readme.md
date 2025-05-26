@@ -18,7 +18,7 @@
 3. #### Añadir las dependencias de ejecución
 
    ```
-   pnpm add -E  express @mikro-orm/core@6.4.15 @mikro-orm/mysql@6.4.15 @mikro-orm/sql-highlighter@1.0.1 reflect-metadata@0.2.2 dotenv http-status-codes
+   pnpm add -E  express @mikro-orm/core@6.4.15 @mikro-orm/mysql@6.4.15 @mikro-orm/sql-highlighter@1.0.1 reflect-metadata@0.2.2 dotenv http-status-codes winston
    ```
 
 4. #### Crear un contenedor de Docker con MySQL para la base de datos
