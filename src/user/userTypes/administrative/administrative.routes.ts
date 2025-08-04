@@ -1,9 +1,10 @@
 import { Router } from "express";
-import { findAll, findOne, update, remove, create, sanitizeInputAdmin } from "./administrative.controller.js";
-export const routerAdmin = Router();
+import {sanitizeInputAdmin, findAll, findOne,create,update,remove} from "./administrative.controller.js";
 
-routerAdmin.get('/findAll', findAll);
-routerAdmin.get('/findOne/:id', findOne);
-routerAdmin.post('/update/:id', sanitizeInputAdmin, update);
-routerAdmin.post('/create', sanitizeInputAdmin, create);
-routerAdmin.delete('/remove/:id', remove);
+export const administrativeRouter = Router();
+
+administrativeRouter.get('/findAll', findAll);
+administrativeRouter.get('/findOne/:id', findOne);
+administrativeRouter.post('/update/:id', sanitizeInputAdmin, update);
+administrativeRouter.post('/create', sanitizeInputAdmin, create);
+administrativeRouter.delete('/remove/:id', remove);
