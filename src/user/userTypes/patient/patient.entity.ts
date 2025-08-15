@@ -1,5 +1,5 @@
 import { Entity, ManyToOne, PrimaryKey, Rel, OneToMany, Cascade, Collection, Property } from '@mikro-orm/core';
-import { MedicalInsurance } from '../../../medicalInsurance/medicalinsurance.entity.js';
+import { MedicalInsurance } from '../../../medicalInsurance/medicalInsurance.entity.js';
 import { Appointment } from '../../../appointment/appointment.entity.js';
 import { User } from '../../user.entity.js';
 
