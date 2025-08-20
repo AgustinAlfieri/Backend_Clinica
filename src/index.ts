@@ -8,6 +8,11 @@ import { errorHandler } from './shared/middlewares/errorHandler.js';
 import { medicalSpecialtyRouter } from './medicalSpecialty/medicalSpecialty.routes.js';
 import { typeAppointmentStatusRouter } from './typeAppointmentStatus/typeAppointmentStatus.routes.js';
 import { appointmentStatusRouter } from './appointmentStatus/appointmentStatus.routes.js'; // Import the appointmentStatus router
+import { administrativeRouter } from './user/userTypes/administrative/administrative.routes.js'; 
+import { practiceRouter } from './practice/practice.routes.js';
+import { medicalInsuranceRouter } from './medicalInsurance/medicalInsurance.routes.js';
+
+
 
 const app = express();
 app.use(express.json());
@@ -21,6 +26,13 @@ app.use('/app/v1/medic', routerMedic);
 app.use('/app/v1/medicalSpecialty', medicalSpecialtyRouter);
 app.use('/app/v1/typeAppointmentStatus', typeAppointmentStatusRouter);
 app.use('/app/v1/appointmentStatus', appointmentStatusRouter); // Add this line to include the appointmentStatus routes
+app.use('/app/v1/administrative', administrativeRouter);
+app.use('/app/v1/practice', practiceRouter);
+app.use('/app/v1/medicalInsurance', medicalInsuranceRouter);
+
+
+
+// Add this line to include the appointmentStatus routes
 await syncSchema(); // Never in production
 
 app.use(errorHandler);
