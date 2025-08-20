@@ -2,7 +2,6 @@ import { orm } from '../../../shared/database/orm.js';
 import { NextFunction, Request, Response } from 'express';
 import { Patient } from './patient.entity.js';
 import { MedicalInsurance } from '../../../medicalInsurance/medicalinsurance.entity.js';
-import { PassThrough } from 'stream';
 
 const em = orm.em;
 

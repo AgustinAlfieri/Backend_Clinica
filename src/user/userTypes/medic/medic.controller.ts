@@ -1,13 +1,10 @@
 import { orm } from '../../../shared/database/orm.js';
 import { NextFunction, Request, Response } from 'express';
 import { Medic } from './medic.entity.js';
-import { populate } from 'dotenv';
 import { MedicalSpecialty } from '../../../medicalSpecialty/medicalSpecialty.entity.js';
 import { AppError } from '../../../shared/errorManagment/appError.js';
-import { STATUS_CODES } from 'http';
 import { StatusCodes } from 'http-status-codes';
 import { logger } from '../../../shared/logger/logger.js';
-import { MediumIntType } from '@mikro-orm/core';
 
 //TODO: Improve function
 function sanitizeInputMedic(req: Request, res: Response, next: NextFunction) {
