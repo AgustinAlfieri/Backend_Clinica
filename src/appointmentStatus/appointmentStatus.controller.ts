@@ -9,7 +9,7 @@ const em = orm.em;
 
 function sanitizeInputAS(req: Request, res: Response, next: NextFunction) {
   req.body.sanitizedInput = {
-    date: req.body.date,
+    date: new Date(),
     observations: req.body.observations,
     idTypeAppointmentStatus: req.body.idTypeAppointmentStatus,
     appointment: req.body.appointment
@@ -39,7 +39,7 @@ async function findOne(req: Request, res: Response) {
     { id },
     { populate: ['appointment', 'typeAppointmentStatus'] }
   );
-  if (!appointmentStatus) throw new AppError('Estado turno no encontrado', StatusCodes.NOT_FOUND); //not necessary return
+  if (!appointmentStatus) { res.status(StatusCodes.NOT_FOUND).send('Estado turno no encontrado'); return; } //not necessary return
   res.status(StatusCodes.OK).send(appointmentStatus); // Send the appointmentStatus
 } // Find one appointmentStatus by id
 
@@ -52,9 +52,9 @@ async function create(req: Request, res: Response) {
     if (!typeAppointmentStatus) throw new AppError('Type appointment status does not exist', StatusCodes.BAD_REQUEST);
     const appointmentStatus = new AppointmentStatus(
       new Date(),
-      req.body.sanitizedInput.observations,
       req.body.sanitizedInput.idTypeAppointmentStatus,
-      req.body.sanitizedInput.appointment // can be null or incomplete during development
+      req.body.sanitizedInput.appointment, // can be null or incomplete during development
+      req.body.sanitizedInput.observations
     );
     await em.persistAndFlush(appointmentStatus); // Persist the appointmentStatus
     res.status(StatusCodes.CREATED).send(appointmentStatus);
@@ -67,9 +67,7 @@ async function create(req: Request, res: Response) {
 async function update(req: Request, res: Response) {
   const id = req.params.id; // get the id from the request params
   try {
-    const appointmentStatus = await em.findOneOrFail(AppointmentStatus, {
-      id
-    });
+    const appointmentStatus = await em.findOneOrFail(AppointmentStatus, { id });
     em.assign(appointmentStatus, req.body.sanitizedInput); // The official documentation of MikroOrm says "assign(entity, data) assigns the values of data to entity in-place. It returns the same entity, so you don’t need to reassign it.  "
     await em.flush();
     res.status(StatusCodes.OK).send(appointmentStatus);

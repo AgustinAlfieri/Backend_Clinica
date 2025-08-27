@@ -11,6 +11,7 @@ import { appointmentStatusRouter } from './appointmentStatus/appointmentStatus.r
 import { administrativeRouter } from './user/userTypes/administrative/administrative.routes.js'; 
 import { practiceRouter } from './practice/practice.routes.js';
 import { medicalInsuranceRouter } from './medicalInsurance/medicalInsurance.routes.js';
+import { appointmentRouter } from './appointment/appointment.router.js';
 
 
 
@@ -21,6 +22,7 @@ app.use((req, res, next) => {
   RequestContext.create(orm.em, next);
 });
 
+app.use('/app/v1/appointment', appointmentRouter);
 app.use('/app/v1/patient', patientRouter);
 app.use('/app/v1/medic', routerMedic);
 app.use('/app/v1/medicalSpecialty', medicalSpecialtyRouter);

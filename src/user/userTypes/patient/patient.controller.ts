@@ -2,6 +2,7 @@ import { orm } from '../../../shared/database/orm.js';
 import { NextFunction, Request, Response } from 'express';
 import { Patient } from './patient.entity.js';
 import { MedicalInsurance } from '../../../medicalInsurance/medicalInsurance.entity.js';
+import { Role } from '../../../shared/enums/role.enum.js';
 
 const em = orm.em;
 
@@ -77,7 +78,8 @@ async function create(req: Request, res: Response) {
       password,
       telephone,
       insuranceNumber,
-      medicalInsurance: m_insurance
+      medicalInsurance: m_insurance,
+      role: Role.PATIENT
     });
 
     await em.flush();

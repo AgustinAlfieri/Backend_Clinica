@@ -13,7 +13,7 @@ appointmentStatusRouter.get('/findOne/:id', findOne);
 appointmentStatusRouter.post('/create', sanitizeInputAS ,create);
 
 // Update a typeAppointmentStatus by id
-appointmentStatusRouter.put("/update/:id", sanitizeInputAS, update);
+appointmentStatusRouter.post("/update/:id", sanitizeInputAS, update);
 
 // Remove a typeAppointmentStatus by id
 appointmentStatusRouter.delete('/remove/:id', remove);

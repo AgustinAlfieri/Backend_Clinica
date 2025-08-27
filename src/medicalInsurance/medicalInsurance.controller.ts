@@ -4,9 +4,9 @@ import { MedicalInsurance } from './medicalInsurance.entity.js';
 import { AppError } from '../shared/errorManagment/appError.js';
 import { StatusCodes } from 'http-status-codes';
 
-const em = orm.em;
+const em = orm.em.fork();
 
-function sanitizeInputMedicalInsurance(req: Request, _: Response, next: NextFunction) {
+function sanitizeInputMedicalInsurance(req: Request, res: Response, next: NextFunction) {
   req.body.sanitizedInput = {
     name: req.body.name,
     coveredPractices: req.body.coveredPractices,
@@ -19,6 +19,7 @@ function sanitizeInputMedicalInsurance(req: Request, _: Response, next: NextFunc
   });
   next();
 }
+
 async function findAll(req: Request, res: Response) { 
   const medicalInsurances = await em.find(MedicalInsurance, {}, { populate: ['coveredPractices', 'clients'] });
 
@@ -40,7 +41,7 @@ async function findOne(req: Request, res: Response) {
 
 async function update(req: Request, res: Response) {
   const id = req.params.id;
-  const medicalInsurance = await em.findOneOrFail(MedicalInsurance, id);
+  const medicalInsurance = await em.findOneOrFail(MedicalInsurance, id, {populate: ['coveredPractices', 'clients']});
 
   const medicalInsuranceUpdated = em.assign(medicalInsurance, req.body.sanitizedInput);
 

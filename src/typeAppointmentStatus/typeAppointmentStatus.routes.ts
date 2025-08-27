@@ -8,7 +8,6 @@ export const typeAppointmentStatusRouter = Router();
 typeAppointmentStatusRouter.get('/findAll', findAll);
 
 // Get one typeAppointmentStatus by id
-
 typeAppointmentStatusRouter.get('/findOne/:id', findOne); 
 
 // Create a new typeAppointmentStatus

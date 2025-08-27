@@ -10,9 +10,9 @@ function sanitizeInputPractice(req: Request, _: Response, next: NextFunction) {
   req.body.sanitizedInput = {
     name: req.body.name,
     description: req.body.description,//? puede ser opcional???
-    medicalInsurances: req.body.medicalinsurance,
     medicalSpeciality: req.body.medicalSpeciality,
-    //appointment: req.body.appointment, //Aun no esta creado
+    medicalInsurances: req.body.medicalInsurances,
+    appointment: req.body.appointment //Aun no esta creado
   };
   Object.keys(req.body.sanitizedInput).forEach((key) => {
     if (req.body.sanitizedInput[key] === undefined) {

@@ -1,7 +1,11 @@
-import { Entity, Property } from '@mikro-orm/core';
-import { BaseEntity } from '../shared/base.entity.js';
+import { Property } from '@mikro-orm/core';
+import { PrimaryKey } from '@mikro-orm/core';
+import { nanoid } from 'nanoid/non-secure';
 
-export class User extends BaseEntity {
+export class User {
+  @PrimaryKey()
+  id?: string = Date.now() + nanoid(14);
+  
   @Property({ unique: true })
   public dni!: string;
 
@@ -16,4 +20,7 @@ export class User extends BaseEntity {
 
   @Property()
   public telephone?: string;
+
+  @Property()
+  public role!: string;
 }

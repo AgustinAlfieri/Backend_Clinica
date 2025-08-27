@@ -5,6 +5,7 @@ import { MedicalSpecialty } from '../../../medicalSpecialty/medicalSpecialty.ent
 import { AppError } from '../../../shared/errorManagment/appError.js';
 import { StatusCodes } from 'http-status-codes';
 import { logger } from '../../../shared/logger/logger.js';
+import { Role } from '../../../shared/enums/role.enum.js';
 
 //TODO: Improve function
 function sanitizeInputMedic(req: Request, res: Response, next: NextFunction) {
@@ -15,7 +16,8 @@ function sanitizeInputMedic(req: Request, res: Response, next: NextFunction) {
     password: req.body.password,
     telephone: req.body.telephone,
     license: req.body.license,
-    m_specialty: req.body.m_specialty
+    m_specialty: req.body.m_specialty,
+    role: req.body.role
   };
   for (const param in req.body.sanitizedInput) {
     if (req.body.sanitizedInput[param] === undefined) {
@@ -66,7 +68,8 @@ async function create(req: Request, res: Response) {
     password,
     telephone,
     license,
-    medicalSpecialty: specialty
+    medicalSpecialty: specialty,
+    role: Role.MEDIC
   });
 
   if (!medic) throw new AppError('Error al crear medico', StatusCodes.INTERNAL_SERVER_ERROR);
