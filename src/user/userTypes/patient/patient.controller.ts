@@ -1,52 +1,48 @@
-import { orm } from '../../../shared/database/orm.js';
-import { NextFunction, Request, Response } from 'express';
+import { Request, Response } from 'express';
 import { Patient } from './patient.entity.js';
-import { MedicalInsurance } from '../../../medicalInsurance/medicalInsurance.entity.js';
-import { Role } from '../../../shared/enums/role.enum.js';
+import { PatientService } from './patient.service.js';
+import { orm } from '../../../shared/database/orm.js';
+import { logger } from '../../../shared/logger/logger.js';
+import { StatusCodes } from 'http-status-codes';
 
 const em = orm.em;
 
-function sanitizeInputPatient(req: Request, res: Response, next: NextFunction) {
-  req.body.sanitizedInput = {
-    dni: req.body.dni,
-    name: req.body.name,
-    email: req.body.email,
-    password: req.body.password,
-    telephone: req.body.telephone,
-    insuranceNumber: req.body.insuranceNumber,
-    medicalInsurance: req.body.medicalInsurance
-  };
-
-  Object.keys(req.body.sanitizedInput).forEach((key) => {
-    if (req.body.sanitizedInput[key] === undefined) {
-      delete req.body.sanitizedInput[key];
-    }
-  });
-
-  next();
-}
-
 async function findAll(req: Request, res: Response) {
   try {
-    const patient = await em.find(Patient, {}, { populate: ['medicalInsurance', 'appointments'] });
-    res.status(200).send({ message: 'Pacientes encontrados: ', data: patient });
-  } catch (errr) {
-    res.status(500).send({ message: 'Error al buscar pacientes ' });
+    const patientService = new PatientService(em);
+    const patients = await patientService.findAll();
+
+    if(!patients || patients.length === 0) {
+        res.status(StatusCodes.NOT_FOUND).send({ message: 'No se encontraron pacientes' });
+        return;
+    }
+
+    res.status(StatusCodes.OK).send({ message: 'Pacientes encontrados', data: patients });
+
+  } catch (error) {
+    logger.error('Error al buscar pacientes:', error);
+    res.status(StatusCodes.INTERNAL_SERVER_ERROR).send({ message: 'Error al buscar pacientes ' });
   }
+
+  return;
 }
 
 async function findOne(req: Request, res: Response) {
   try {
     const id = req.params.id;
-    const patient = await em.findOne(Patient, id, { populate: ['medicalInsurance', 'appointments'] });
+    const patientService = new PatientService(em);
+    const patient = await patientService.findOne(id);
 
     if (patient) {
-      res.status(200).send({ message: 'Paciente encontrado', data: patient });
-    } else {
-      res.status(404).send({ message: 'Paciente no encontrado' });
+      res.status(StatusCodes.OK).send({ message: 'Paciente encontrado', data: patient });
+      return;
     }
+
+    res.status(StatusCodes.NOT_FOUND).send({ message: 'Paciente no encontrado' });
+
   } catch (error) {
-    res.status(500).send({ message: 'Error al buscar paciente' });
+    logger.error('Error al buscar paciente:', error);
+    res.status(StatusCodes.INTERNAL_SERVER_ERROR).send({ message: 'Error al buscar paciente' });
   }
 
   return;
@@ -55,39 +51,46 @@ async function findOne(req: Request, res: Response) {
 async function update(req: Request, res: Response) {
   try {
     const id: string = req.params.id;
-    const patient = await em.findOneOrFail(Patient, { id });
+    const patientService = new PatientService(em);
+    const patient = await patientService.update(id, req.body);
 
-    em.assign(patient, req.body.sanitizedInput);
+    if (patient) {
+      res.status(StatusCodes.OK).send({ message: 'Paciente modificado correctamente', data: patient });
+      return;
+    }
 
-    await em.flush();
-    res.status(201).send({ message: 'Paciente modificado correctamente' });
+    res.status(StatusCodes.NOT_FOUND).send({ message: 'Paciente no encontrado' });
+
   } catch (error) {
-    res.status(500).send({ message: 'Error al modificar al paciente' });
+    logger.error('Error al modificar paciente:', error);
+
+    res.status(StatusCodes.INTERNAL_SERVER_ERROR).send({
+      message: 'Error al modificar al paciente',
+      error: error instanceof Error ? error.message : error
+    });
   }
   return;
 }
 
 async function create(req: Request, res: Response) {
   try {
-    const { dni, name, email, password, telephone, insuranceNumber, medicalInsurance } = req.body.sanitizedInput;
-    const m_insurance = await em.findOneOrFail(MedicalInsurance, medicalInsurance);
-    const patient = em.create(Patient, {
-      dni,
-      name,
-      email,
-      password,
-      telephone,
-      insuranceNumber,
-      medicalInsurance: m_insurance,
-      role: Role.PATIENT
+    const patientService = new PatientService(em);
+    const patient = await patientService.create(req.body);
+
+    if(!patient) {
+        res.status(StatusCodes.BAD_REQUEST).send({ message: 'No se pudo crear el paciente' });
+        return;
+    }
+
+    res.status(StatusCodes.OK).send({ message: 'Paciente creado correctamente', patient });
+  } catch (error) {
+    logger.error('Error al crear paciente:', error);
+
+    res.status(StatusCodes.INTERNAL_SERVER_ERROR).send({ 
+      message: 'Error al crear paciente', 
+      error: error instanceof Error ? error.message : error
     });
 
-    await em.flush();
-
-    res.status(200).send({ message: 'Paciente creado correctamente' });
-  } catch (error) {
-    console.error('Error al crear paciente:', error);
-    res.status(500).send({ message: 'Error al crear paciente' });
   }
   return;
 }
@@ -95,14 +98,21 @@ async function create(req: Request, res: Response) {
 async function remove(req: Request, res: Response) {
   try {
     const id: string = req.params.id;
-    const patientRemove = em.getReference(Patient, id);
+    const patientService = new PatientService(em);
 
-    await em.removeAndFlush(patientRemove);
+    if(await patientService.remove(id)) {
+        res.status(StatusCodes.OK).send({ message: 'Paciente eliminado correctamente' });
+        return;
+    }
 
-    res.status(200).send({ message: 'Paciente eliminado correctamente' });
+    res.status(StatusCodes.NOT_FOUND).send({ message: 'Paciente no encontrado' });
   } catch (error) {
-    res.status(500).send({ message: 'Error al eliminar paciente' });
+    logger.error("Error al eliminando paciente", error);
+    res.status(StatusCodes.INTERNAL_SERVER_ERROR).send({ 
+      message: 'Error al eliminar paciente',
+      error: error instanceof Error ? error.message : error
+    });
   }
 }
 
-export { sanitizeInputPatient, findAll, findOne, update, create, remove };
+export { findAll, findOne, update, create, remove };

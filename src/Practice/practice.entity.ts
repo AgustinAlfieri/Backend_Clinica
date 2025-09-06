@@ -7,13 +7,13 @@ import { nanoid } from 'nanoid';
 @Entity()
 export class Practice{
   @PrimaryKey()
-  id?: string = Date.now() + nanoid(14);
+  id: string = Date.now() + nanoid(14);
 
   @Property({ unique: true })
   public name!: string;
 
   @Property()
-  public description?: string;
+  public description?: string | null;
 
   @ManyToOne(() => MedicalSpecialty)
   public medicalSpecialty: Rel<MedicalSpecialty>;
@@ -28,7 +28,7 @@ export class Practice{
   appointments = new Collection<Appointment>(this);
 
   constructor(name: string, medicalSpecialty: Rel<MedicalSpecialty>, medicalInsurances: Collection<MedicalInsurance>, 
-              appointments: Collection<Appointment>, description?: string) 
+              appointments: Collection<Appointment>, description: string) 
   {
     this.name = name;
     this.description = description;

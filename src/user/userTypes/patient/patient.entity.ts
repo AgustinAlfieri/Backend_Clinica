@@ -6,9 +6,9 @@ import { User } from '../../user.entity.js';
 @Entity()
 export class Patient extends User {
   @Property()
-  public insuranceNumber?: string;
+  public insuranceNumber?: string | null;
 
-  @ManyToOne(() => MedicalInsurance)
+  @ManyToOne(() => MedicalInsurance, { nullable: true })
   public medicalInsurance?: Rel<MedicalInsurance>;
 
   @OneToMany(() => Appointment, (appointment) => appointment.patient, { cascade: [Cascade.ALL] })

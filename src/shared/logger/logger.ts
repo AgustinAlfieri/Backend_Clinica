@@ -14,12 +14,4 @@ const logger = winston.createLogger({
   ]
 });
 
-new winston.transports.File({
-  filename: 'app.log',
-  level: 'warn',
-  maxsize: 1024 * 1024,
-  maxFiles: 5,
-  tailable: true
-})
-
 export { logger };

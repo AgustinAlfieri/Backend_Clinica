@@ -1,85 +1,115 @@
 import { orm } from '../../../shared/database/orm.js';
 import { NextFunction, Request, Response } from 'express';
 import { Administrative } from './administrative.entity.js';
-import { populate } from 'dotenv';
-//import { Appointment } from '../../../appointment/appointment.entity.js'; //No esta creado, va a dar error
+import { Appointment } from '../../../appointment/appointment.entity.js'; //No esta creado, va a dar error
 import { AppError } from '../../../shared/errorManagment/appError.js';
 import { StatusCodes } from 'http-status-codes';
+import { Role } from '../../../shared/enums/role.enum.js';
 import { logger } from '../../../shared/logger/logger.js';
+import { AdministrativeService } from './administrative.service.js';
 
-const em = orm.em;
-
-function sanitizeInputAdmin(req: Request, res: Response, next: NextFunction) {
-  req.body.sanitizedInput= {
-    dni: req.body.dni,
-    name: req.body.name,
-    email: req.body.email,
-    password: req.body.password,
-    telephone: req.body.telephone,
-  };
-  for (const param in req.body.sanitizedInput) {
-    if (req.body.sanitizedInput[param] === undefined) {
-      delete req.body.sanitizedInput[param];
-    }
-  }
-  next();
-}
+const em = orm.em.fork();
 
 async function findAll(req: Request, res: Response) {
-  const administratives = await em.find(Administrative, {}, { populate: ['appointments'] })
-  
-  if (!administratives) throw new AppError('No se encontraron administrativos', StatusCodes.NOT_FOUND);
-  
-  res.status(StatusCodes.ACCEPTED).send({ message: 'Administrativos encontrados: ', data: administratives });
+  try{
+    const aService = new AdministrativeService(em);
+    const administratives = await aService.findAll();
+
+    if(!administratives || administratives.length === 0) {
+      res.status(StatusCodes.NOT_FOUND).send({ message: 'No se encontraron administrativos' });
+      return;
+    }
+
+    res.status(StatusCodes.ACCEPTED).send({ message: 'Administrativos encontrados: ', data: administratives });
+  } catch(error){
+    logger.error(error);
+
+    res.status(StatusCodes.INTERNAL_SERVER_ERROR).send({ 
+      error: error instanceof Error ? error.message : 'Error al obtener los administrativos'
+    });
+  }
 }
 
 async function findOne(req: Request, res: Response) {
-  const id = req.params.id
-  const administrative = await em.findOne(Administrative, id , { populate: ['appointments'] })
-  
-  if (!administrative) throw new AppError('Adminitrativo no encontrado', StatusCodes.NOT_FOUND);
-  
-  res.status(StatusCodes.ACCEPTED).send({ message: 'Administrativo encontrado: ', data: administrative });
+  try{
+    const id: string = req.params.id;
+    const aService = new AdministrativeService(em);
+    const administrative = await aService.findOne(id);
+
+    if (!administrative) {
+      res.status(StatusCodes.NOT_FOUND).send({ message: 'Administrativo no encontrado' });
+      return;
+    }
+
+    res.status(StatusCodes.ACCEPTED).send({ message: 'Administrativo encontrado: ', data: administrative });
+  } catch (error) {
+    logger.error(error);
+
+    res.status(StatusCodes.INTERNAL_SERVER_ERROR).send({
+      error: error instanceof Error ? error.message : 'Error al obtener el administrativo'
+    });
+  }
 }
 
 async function create(req: Request, res: Response) {
-  try {
-    const administrative1 = req.body.sanitizedInput;
-    const administrative = em.create(Administrative, administrative1);
-    await em.persistAndFlush(administrative); // <-- Cambia esto
-    res.status(StatusCodes.CREATED).send(administrative);
+  try{
+    const aService = new AdministrativeService(em);
+    const administrative = await aService.create(req.body);
+
+    if(!administrative) {
+      res.status(StatusCodes.BAD_REQUEST).send({ message: 'No se pudo crear el administrativo' });
+      return;
+    }
+
+    res.status(StatusCodes.CREATED).send({ message: 'Administrativo creado: ', data: administrative });
   } catch (error) {
-    res.status(StatusCodes.INTERNAL_SERVER_ERROR).send({ message: "No se ha creado el usuario administrativo" });
+    logger.error(error);
+
+    res.status(StatusCodes.INTERNAL_SERVER_ERROR).send({
+      error: error instanceof Error ? error.message : 'Error al crear el administrativo'
+    });
   }
 }
 
 async function update(req: Request, res: Response) {
-  const id: string = req.params.id; 
-  const administrative = await em
-    .findOneOrFail(Administrative, { id }) 
-    .catch(() => {
-      throw new AppError('No existe el medico a modificar', StatusCodes.NOT_FOUND);
-    });
+  try{
+    const id: string = req.params.id;
+    const aService = new AdministrativeService(em);
+    const administrative = await aService.update(id, req.body);
 
-  const administrativeUpdated = em.assign(Administrative, req.body);
+    if(!administrative) {
+      res.status(StatusCodes.BAD_REQUEST).send({ message: 'No se pudo actualizar el administrativo' });
+      return;
+    }
+    res.status(StatusCodes.ACCEPTED).send({ message: 'Administrativo actualizado: ', data: administrative });
+  } catch (error) {
+    logger.error(error);
 
-  await em
-    .flush()
-    .then(() => {
-      res.status(StatusCodes.OK);
-    })
-    .catch(() => {
-      throw new AppError('Error al modificar medico', StatusCodes.INTERNAL_SERVER_ERROR);
+    res.status(StatusCodes.INTERNAL_SERVER_ERROR).send({
+      error: error instanceof Error ? error.message : 'Error al actualizar el administrativo'
     });
+  }
 }
 
 async function remove(req: Request, res: Response) {
-  const id = req.params.id;
-  const administrativeRemove = em.getReference(Administrative, id);
+  try{
+    const id: string = req.params.id;
+    const aService = new AdministrativeService(em);
+    const administrative = await aService.remove(id);
 
-  await em.removeAndFlush(administrativeRemove);
+    if(!administrative) {
+      res.status(StatusCodes.NOT_FOUND).send({ message: 'No se pudo eliminar el administrativo' });
+      return;
+    }
 
-  res.status(StatusCodes.ACCEPTED).send();
+    res.status(StatusCodes.ACCEPTED).send({ message: 'Administrativo eliminado: ' });
+  } catch (error) {
+    logger.error(error);
+
+    res.status(StatusCodes.INTERNAL_SERVER_ERROR).send({
+      error: error instanceof Error ? error.message : 'Error al eliminar el administrativo'
+    });
+  }
 }
 
-export {sanitizeInputAdmin, findAll, findOne,create,update,remove};
+export { findAll, findOne, create, update, remove };

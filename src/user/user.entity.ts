@@ -4,7 +4,7 @@ import { nanoid } from 'nanoid/non-secure';
 
 export class User {
   @PrimaryKey()
-  id?: string = Date.now() + nanoid(14);
+  id: string = Date.now() + nanoid(14);
   
   @Property({ unique: true })
   public dni!: string;
@@ -23,4 +23,5 @@ export class User {
 
   @Property()
   public role!: string;
+
 }

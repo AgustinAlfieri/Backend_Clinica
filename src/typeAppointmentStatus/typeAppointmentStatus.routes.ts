@@ -1,6 +1,6 @@
 
 import { Router } from 'express';
-import {findAll, findOne, create, update, remove, sanitizeInputAST} from "./typeAppointmentStatus.controller.js";
+import {findAll, findOne, create, update, remove } from "./typeAppointmentStatus.controller.js";
 
 
 export const typeAppointmentStatusRouter = Router();
@@ -11,10 +11,10 @@ typeAppointmentStatusRouter.get('/findAll', findAll);
 typeAppointmentStatusRouter.get('/findOne/:id', findOne); 
 
 // Create a new typeAppointmentStatus
-typeAppointmentStatusRouter.post('/create', sanitizeInputAST ,create);
+typeAppointmentStatusRouter.post('/create' ,create);
 
 // Update a typeAppointmentStatus by id
-typeAppointmentStatusRouter.put("/update/:id", sanitizeInputAST, update);
+typeAppointmentStatusRouter.put("/update/:id", update);
 
 // Remove a typeAppointmentStatus by id
 typeAppointmentStatusRouter.delete('/remove/:id', remove);

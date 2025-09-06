@@ -2,19 +2,7 @@ import { orm } from "../shared/database/orm.js";
 import {NextFunction, Request, Response} from "express";
 import { TypeAppointmentStatus } from "./typeAppointmentStatus.entity.js";
 
-const em = orm.em;
-
-function sanitizeInputAST(req: Request, res: Response, next: NextFunction){
-    req.body.sanitizedInput = {
-        name: req.body.name,
-        }
-    Object.keys(req.body.sanitizedInput).forEach((key) => {
-        if (req.body.sanitizedInput[key] === undefined) {
-            delete req.body.sanitizedInput[key];
-        }
-    })
-    next()
-} // / Middleware to sanitize input, removing undefined values
+const em = orm.em.fork();
 
 async function findAll(req: Request, res: Response) {
     try {
@@ -90,5 +78,5 @@ async function remove(req: Request, res: Response){
     }
 } // Remove a typeAppointmentStatus by id
 
-export {findAll, findOne, create, update, remove, sanitizeInputAST}
+export {findAll, findOne, create, update, remove }
 // export {findAll, findOne, create, update, remove} from "./typeAppointmentStatus.controller.js";
