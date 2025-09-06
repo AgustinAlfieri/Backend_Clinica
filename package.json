@@ -16,7 +16,9 @@
   "license": "ISC",
   "packageManager": "pnpm@10.8.0",
   "devDependencies": {
+    "@types/bcrypt": "^6.0.0",
     "@types/express": "5.0.1",
+    "@types/jsonwebtoken": "^9.0.10",
     "@types/node": "22.15.3",
     "tsc-watch": "6.0.4",
     "typescript": "5.1.3"
