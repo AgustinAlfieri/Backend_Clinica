@@ -1,9 +1,22 @@
 import bcrypt from 'bcrypt';
+import { orm } from '../database/orm.js';
 import jwt from 'jsonwebtoken';
+import { Administrative } from '../../user/userTypes/administrative/administrative.entity.js';
+import { Medic } from '../../user/userTypes/medic/medic.entity.js';
+import { Patient } from '../../user/userTypes/patient/patient.entity.js';
+import { MedicalInsurance } from '../../medicalInsurance/medicalInsurance.entity.js';
+import { Collection } from '@mikro-orm/mysql';
+import { MedicalSpecialty } from '../../medicalSpecialty/medicalSpecialty.entity.js';
+import { Appointment } from '../../appointment/appointment.entity.js';
+import { PatientService } from '../../user/userTypes/patient/patient.service.js';
+import { MedicService } from '../../user/userTypes/medic/medic.service.js';
+import { AdministrativeService } from '../../user/userTypes/administrative/administrative.service.js';
 
-interface userCredentials { email: string; password: string; }
-interface payload { userId: string; role: string; iat: number; }
-
+export interface DataNewUser { role: string; id: string; dni: string; name: string; email: string; password: string; telephone: string; license: string; specialty: string; insuranceNumber: string; medicalInsurance: MedicalInsurance; medicalSpecialty: Collection<MedicalSpecialty>; appointments: Collection<Appointment>; }
+export interface userCredentials { email: string; password: string; role: string; }
+export interface payload { userId: string; role: string; iat: number; }
+export interface AuthResponse { token: string; user: { id: string; email: string; role: string; }; }
+const em = orm.em;
 
 export const hashPassword = async (password: string): Promise<string> => {
   const saltRounds = 10;
@@ -41,3 +54,90 @@ export const verifyToken = (token: string): payload => {
       throw new Error('Token inválido');
   }
 };
+
+export const login = async (credentials: userCredentials) : Promise<AuthResponse> => {
+  const _em = em.fork();
+  const email =  credentials.email;
+  const password = credentials.password;
+  const role = credentials.role;
+  
+  if(!email || !password) {
+    throw new Error('Email y contraseña son requeridos');
+  }
+
+  //Veo que rol es, sino despues me da error de properties
+  let userEntity;
+  switch(role) {
+    case 'Patient':
+      userEntity = Patient;
+      break;
+    case 'Medic':
+      userEntity = Medic;
+      break;
+    case 'Administrative':
+      userEntity = Administrative;
+      break;
+    default:
+      throw new Error('Rol inválido');
+  }
+
+  //Busco usuario
+  const user = await _em.findOne(userEntity, { email: email, role: role });
+
+  if (!user) {
+    throw new Error('Usuario no encontrado');
+  }
+
+  //Chequeo contraseña
+  const passwordMatch = await comparePassword(password, user.password); //Aca da error
+  if (!passwordMatch) {
+    throw new Error('Contraseña incorrecta');
+  }
+
+  const token = generateToken(user.id, user.role);
+  return {
+    token,
+    user: {
+      id: user.id,
+      email: user.email,
+      role: user.role
+    }
+  };
+}
+
+//Para registrar un nuevo usuario
+export const register = async (dataNewUser: DataNewUser): Promise<AuthResponse> => {
+  //No hago el fork aca porque lo hacen los servicios
+  //const _em = em.fork();
+
+  switch(dataNewUser.role) {
+    case 'Patient':
+      const pService = new PatientService(em); 
+      const newPatient = await pService.create(dataNewUser);
+      dataNewUser.id = newPatient.id;
+      break;
+    case 'Medic':
+      const mService = new MedicService(em); 
+      const newMedic = await mService.create(dataNewUser);
+      dataNewUser.id = newMedic.id;   //para poder firmar ok el token
+      break;
+    case 'Administrative':
+      const aService = new AdministrativeService(em); 
+      const newAdministrative = await aService.create(dataNewUser);
+      dataNewUser.id = newAdministrative.id;
+      break;
+    default:
+      throw new Error('Rol inválido');
+  }
+
+  const token = generateToken(dataNewUser.id, dataNewUser.role);
+  return {
+    token,
+    user: {
+      id: dataNewUser.id,
+      email: dataNewUser.email,
+      role: dataNewUser.role
+    }
+  };
+
+}

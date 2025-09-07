@@ -1,21 +1,10 @@
 import { EntityManager } from "@mikro-orm/mysql";
 import { Patient } from "./patient.entity.js";
-import { hashPassword } from "../../../shared/auth/auth.service.js";
+import { DataNewUser, hashPassword } from "../../../shared/auth/auth.service.js";
 import { MedicalInsurance } from "../../../medicalInsurance/medicalInsurance.entity.js";
 import { Role } from "../../../shared/enums/role.enum.js";
 import { logger } from "../../../shared/logger/logger.js";
 import { compare } from "bcrypt";
-
-interface PatientDTO {
-  dni: string;
-  name: string;
-  email: string;
-  password: string;
-  telephone: string;
-  insuranceNumber: string;
-  medicalInsurance: MedicalInsurance;
-  role: string;
-}
 
 export class PatientService {
   constructor(private em: EntityManager) {}
@@ -30,7 +19,7 @@ export class PatientService {
     return await _em.findOne(Patient, id, { populate: ['medicalInsurance', 'appointments'] });
   }
 
-  async create(patient: PatientDTO) : Promise<Patient> {
+  async create(patient: DataNewUser) : Promise<Patient> {
     const _em = this.em.fork();
     const existPatient = await _em.findOne(Patient, { dni: patient.dni });
     const newPatient = new Patient();
@@ -75,7 +64,7 @@ export class PatientService {
     return newPatient;
   }
 
-  async update(id: string, patientUpdate: Partial<PatientDTO>) : Promise<Patient | null> {
+  async update(id: string, patientUpdate: Partial<DataNewUser>) : Promise<Patient | null> {
     try {
         const _em = this.em.fork();
         const patient = await _em.findOneOrFail(Patient, id);

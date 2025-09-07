@@ -1,30 +1,43 @@
 
 //En clase de consulta se define que debido a la poca cantidad de roles y permisos, 
 // se implementara un sistema de permisos basado en roles y acciones.
+
+// TO-DO : Definir todos los posibles permisos
+export enum actions {
+    CREATE = 'create',
+    DELETE = 'delete',
+    UPDATE = 'update',
+    VIEW = 'view',
+    VIEW_OWN_APPOINTMENTS = 'viewOwnAppointments'
+};
+
 export const rolesPermissions: Record<string, Record<string, string[]>> = 
 {
     'Administrative' : {
-        User: ['create', 'delete', 'update', 'view'],
-        Patient: ['create', 'delete', 'update', 'view'],
-        Medic: ['create', 'delete', 'update', 'view'],
-        Appointment: ['create', 'delete', 'update', 'view'],
-        AppointmentStatus: ['create', 'delete', 'update', 'view']
+        User: [actions.CREATE, actions.DELETE, actions.UPDATE, actions.VIEW],
+        Patient: [actions.CREATE, actions.DELETE, actions.UPDATE, actions.VIEW],
+        Medic: [actions.CREATE, actions.DELETE, actions.UPDATE, actions.VIEW],
+        Appointment: [actions.CREATE, actions.DELETE, actions.UPDATE, actions.VIEW],
+        AppointmentStatus: [actions.CREATE, actions.DELETE, actions.UPDATE, actions.VIEW]
     },
+
     'Medic' : {
-        User: ['view', 'update'],
-        Patient: ['view', 'update'],
-        Medic: ['view', 'update']
+        User: [actions.VIEW, actions.UPDATE],
+        Patient: [actions.VIEW, actions.UPDATE],
+        Medic: [actions.VIEW, actions.UPDATE]
     },
+
     'Patient' : {
-        User: ['view'],
-        Patient: ['update', 'viewOwnAppointments'],
-        Medic: ['view']
+        User: [actions.VIEW],
+        Patient: [actions.UPDATE, actions.VIEW_OWN_APPOINTMENTS],
+        Medic: [actions.VIEW]
     },
+
     //User with all permissions
     'Administrator' : {
-        User: ['create', 'delete', 'update', 'view'],
-        Patient: ['view', 'update', 'viewOwnAppointments'],
-        Medic: ['view', 'update', 'viewOwnAppointments']
+        User: [actions.CREATE, actions.DELETE, actions.UPDATE, actions.VIEW],
+        Patient: [actions.CREATE, actions.DELETE, actions.UPDATE, actions.VIEW, actions.VIEW_OWN_APPOINTMENTS],
+        Medic: [actions.CREATE, actions.DELETE, actions.UPDATE, actions.VIEW, actions.VIEW_OWN_APPOINTMENTS]
     }
 };
 

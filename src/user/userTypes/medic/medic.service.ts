@@ -1,23 +1,11 @@
 import { Collection, EntityManager } from "@mikro-orm/mysql";
 import { Medic } from "./medic.entity.js";
-import { hashPassword } from "../../../shared/auth/auth.service.js";
+import { DataNewUser, hashPassword } from "../../../shared/auth/auth.service.js";
 import { Role } from "../../../shared/enums/role.enum.js";
 import { MedicalSpecialty } from "../../../medicalSpecialty/medicalSpecialty.entity.js";
 import { comparePassword } from "../../../shared/auth/auth.service.js";
 import { logger } from "../../../shared/logger/logger.js";
 import { Appointment } from "../../../appointment/appointment.entity.js";
-
-
-interface MedicDTO {
-    dni: string;
-    name: string;
-    email: string;
-    password: string;
-    telephone: string;
-    license: string;
-    medicalSpecialty: Collection<MedicalSpecialty>;
-    appointments: Collection<Appointment>;
-}
 
 export class MedicService {
     constructor(private em: EntityManager) {}
@@ -32,7 +20,7 @@ export class MedicService {
         return await _em.findOne(Medic, id, { populate: ['medicalSpecialty', 'appointments'] });
     }
 
-    async create(medic: MedicDTO) : Promise<Medic> {
+    async create(medic: DataNewUser) : Promise<Medic> {
         const _em = this.em.fork();
         const newMedic = new Medic();
 
@@ -79,7 +67,7 @@ export class MedicService {
         return newMedic;
     }
 
-    async update(id: string, medicUpdate: Partial<MedicDTO>) : Promise<Medic | null> {
+    async update(id: string, medicUpdate: Partial<DataNewUser>) : Promise<Medic | null> {
         try {
             const _em = this.em.fork();
             const medic = await _em.findOneOrFail(Medic, id, { populate: ['medicalSpecialty', 'appointments'] });

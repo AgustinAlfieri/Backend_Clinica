@@ -1,17 +1,8 @@
 import { Collection, EntityManager } from "@mikro-orm/mysql";
 import { Administrative } from "./administrative.entity.js";
-import { comparePassword, hashPassword } from "../../../shared/auth/auth.service.js"
+import { comparePassword, DataNewUser, hashPassword } from "../../../shared/auth/auth.service.js"
 import { Appointment } from "../../../appointment/appointment.entity.js";
 import { Role } from "../../../shared/enums/role.enum.js";
-
-interface AdministrativeDTO {
-    dni: string;
-    name: string;
-    email: string;
-    password: string;
-    telephone: string;
-    appointments: Collection<Appointment>;
-}
 
 export class AdministrativeService {
     constructor(private em: EntityManager) {}
@@ -26,7 +17,7 @@ export class AdministrativeService {
         return await _em.findOne(Administrative, id, { populate: ['appointments'] });
     }
 
-    async create(administrative: Partial<AdministrativeDTO>) : Promise<Administrative> {
+    async create(administrative: Partial<DataNewUser>) : Promise<Administrative> {
         const _em = this.em.fork();
         const newAdministrative = new Administrative();
 
@@ -66,7 +57,7 @@ export class AdministrativeService {
         return newAdministrative;
     }
 
-    async update(id: string, administrative: Partial<AdministrativeDTO>) : Promise<Administrative> {
+    async update(id: string, administrative: Partial<DataNewUser>) : Promise<Administrative> {
         const _em = this.em.fork();
         const existingAdministrative = await _em.findOne(Administrative, id);
         const newAdministrativeData = new Administrative();
