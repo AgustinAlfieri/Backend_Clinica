@@ -8,6 +8,7 @@ import { routerMedic } from "../user/userTypes/medic/medic.routes.js";
 import { typeAppointmentStatusRouter } from "../typeAppointmentStatus/typeAppointmentStatus.routes.js";
 import { appointmentStatusRouter } from "../appointmentStatus/appointmentStatus.routes.js"; // Import the appointmentStatus router
 import { Application } from "express";
+import { authRouter } from "./auth/auth.routes.js";
 
 export default (app: Application) => {
     app.use('/app/v1/appointment', appointmentRouter);
@@ -19,4 +20,5 @@ export default (app: Application) => {
     app.use('/app/v1/administrative', administrativeRouter);
     app.use('/app/v1/practice', practiceRouter);
     app.use('/app/v1/medicalInsurance', medicalInsuranceRouter);
+    app.use('/api/v1/auth', authRouter);
 }
