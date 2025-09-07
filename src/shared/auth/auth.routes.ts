@@ -4,7 +4,7 @@ import { login, register } from './auth.controller.js';
 export const authRouter = Router();
 
 //Para iniciar sesion
-authRouter.get('/login', login);
+authRouter.post('/login', login);
 
 //Para crear nuevo usuario
-authRouter.get('/register', register);
+authRouter.post('/register', register);
