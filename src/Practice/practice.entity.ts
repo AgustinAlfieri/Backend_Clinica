@@ -22,18 +22,17 @@ export class Practice{
     cascade: [Cascade.ALL],
     owner: true
   })
-  medicalInsurances = new Collection<MedicalInsurance>(this);
+  medicalInsurances ?= new Collection<MedicalInsurance>(this);
 
   @ManyToMany(() => Appointment, (appointment) => appointment.practices)
-  appointments = new Collection<Appointment>(this);
+  appointments ?= new Collection<Appointment>(this);
 
-  constructor(name: string, medicalSpecialty: Rel<MedicalSpecialty>, medicalInsurances: Collection<MedicalInsurance>, 
-              appointments: Collection<Appointment>, description: string) 
+  constructor(name: string, medicalSpecialty: Rel<MedicalSpecialty>, description: string) 
   {
     this.name = name;
     this.description = description;
     this.medicalSpecialty = medicalSpecialty;
-    this.medicalInsurances = medicalInsurances;
-    this.appointments = appointments;
+    this.medicalInsurances = new Collection<MedicalInsurance>(this);
+    this.appointments = new Collection<Appointment>(this) ;
   }
 }

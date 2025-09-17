@@ -1,17 +1,10 @@
 import { Router } from 'express';
-import {
-  findAll,
-  findOne,
-  update,
-  remove,
-  create,
-  sanitizeInputMedicalSpecialty
-} from './medicalSpecialty.controller.js';
+import { findAll, findOne, update, remove, create } from './medicalSpecialty.controller.js';
 
 export const medicalSpecialtyRouter = Router();
 
 medicalSpecialtyRouter.get('/findAll', findAll);
 medicalSpecialtyRouter.get('/findOne/:id', findOne);
-medicalSpecialtyRouter.post('/create', sanitizeInputMedicalSpecialty, create);
-medicalSpecialtyRouter.post('/update/:id', sanitizeInputMedicalSpecialty, update);
+medicalSpecialtyRouter.post('/create', create);
+medicalSpecialtyRouter.post('/update/:id', update);
 medicalSpecialtyRouter.delete('/remove/:id', remove);

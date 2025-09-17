@@ -1,72 +1,115 @@
 import { orm } from '../shared/database/orm.js';
-import { NextFunction, Request, Response } from 'express';
-import { Practice } from './practice.entity.js';
+import { Request, Response } from 'express';
 import { AppError } from '../shared/errorManagment/appError.js';
 import { StatusCodes } from 'http-status-codes';
+import { PracticeService } from './practice.service.js';
 
 const em = orm.em;
 
-function sanitizeInputPractice(req: Request, _: Response, next: NextFunction) {
-  req.body.sanitizedInput = {
-    name: req.body.name,
-    description: req.body.description,//? puede ser opcional???
-    medicalSpeciality: req.body.medicalSpeciality,
-    medicalInsurances: req.body.medicalInsurances,
-    appointment: req.body.appointment //Aun no esta creado
-  };
-  Object.keys(req.body.sanitizedInput).forEach((key) => {
-    if (req.body.sanitizedInput[key] === undefined) {
-      delete req.body.sanitizedInput[key];
-    }
-  });
-  next();
-}
-
 async function findAll(req: Request, res: Response) {
-  const practices = await em.find(Practice, {}, { populate: ['medicalSpecialty', 'medicalInsurances'] }); //Se debe agregar 'appointment'
+  try {
+    const practiceService = new PracticeService(em);
+    const practices = await practiceService.findAll();
 
-  if (!practices) throw new AppError('Practicas no encontradas', StatusCodes.NOT_FOUND);
+    if (!practices || practices.length === 0) {
+      res.status(StatusCodes.NOT_FOUND).send({ message: 'No se encontraron practicas' });
+      return;
+    }
 
-  res.status(StatusCodes.OK).send(practices);
+    res.status(StatusCodes.OK).send(practices);
+  } catch (error) {
+    res.status(StatusCodes.INTERNAL_SERVER_ERROR)
+        .send({
+          error: error instanceof Error ? error.message : 'Error interno del servidor'
+        });
+  }
 }
 
 async function findOne(req: Request, res: Response) {
-  const id = req.params.id;
-  const practice = await em.findOne(Practice, id, { populate: ['medicalSpecialty', 'medicalInsurances'] });//Se debe agregar 'appointment'
+  try{
+    const id = req.params.id;
+    const practiceService = new PracticeService(em);
+    const practice = await practiceService.findOne(id);
 
-  if (!practice) throw new AppError('Practica no encontrada', StatusCodes.NOT_FOUND);
+    if (!practice) {
+      res.status(StatusCodes.NOT_FOUND).send({ message: 'No se encontró la practica' });
+      return;
+    } 
 
-  res.status(StatusCodes.OK).send(practice);
+    res.status(StatusCodes.OK).send(practice);
+  } catch (error) {
+    res.status(StatusCodes.INTERNAL_SERVER_ERROR)
+        .send({
+          error: error instanceof Error ? error.message : 'Error interno del servidor'
+        });
+  }
 }
 
 async function update(req: Request, res: Response) {
-  const id = req.params.id;
-  const practice = await em.findOneOrFail(Practice, id);
+  try{
+    const id = req.params.id;
+    const practiceService = new PracticeService(em);
+    const existingPractice = await practiceService.findOne(id);
 
-  const practiceUpdated = em.assign(practice, req.body.sanitizedInput); 
+    if (!existingPractice) {
+      throw new AppError('No se encontró la practica', StatusCodes.NOT_FOUND);
+    }
 
-  if (!practiceUpdated)
-    throw new AppError('Error al modificar la practica', StatusCodes.NOT_MODIFIED);
+    const updatedPractice = await practiceService.update(id, req.body.sanitizedInput);
 
-  await em.flush();
+    if (!updatedPractice) {
+      throw new AppError('Error al actualizar la practica', StatusCodes.INTERNAL_SERVER_ERROR);
+    }
 
-  res.status(StatusCodes.OK).send(practiceUpdated);
+    res.status(StatusCodes.OK).send(updatedPractice);
+  } catch (error) {
+    res.status(StatusCodes.INTERNAL_SERVER_ERROR)
+        .send({
+          error: error instanceof Error ? error.message : 'Error interno del servidor'
+        });
+  }
 }
 
 async function create(req: Request, res: Response) {
-  const practice = em.create(Practice, req.body.sanitizedInput);
-  await em.flush();
-  if (!practice) throw new AppError('Error al crear la practica', StatusCodes.INTERNAL_SERVER_ERROR);
-  res.status(StatusCodes.CREATED).send(practice);
+  try {
+    const practiceService = new PracticeService(em);
+    const newPractice = await practiceService.create(req.body);
+
+    if (!newPractice) {
+      throw new AppError('Error al crear la practica', StatusCodes.INTERNAL_SERVER_ERROR);
+    }
+
+    res.status(StatusCodes.CREATED).send(newPractice);
+  } catch (error) {
+    res.status(StatusCodes.INTERNAL_SERVER_ERROR)
+        .send({
+          error: error instanceof Error ? error.message : 'Error interno del servidor'
+        });
+  }
 }
 
 async function remove(req: Request, res: Response) {
-  const id = req.params.id;
-  const deletePractice = em.getReference(Practice, id);
+  try{
+    const id = req.params.id;
+    const practiceService = new PracticeService(em);
+    const existingPractice = await practiceService.findOne(id);
 
-  await em.removeAndFlush(deletePractice);
+    if (!existingPractice) {
+      throw new AppError('No se encontró la practica', StatusCodes.NOT_FOUND);
+    }
 
-  res.status(StatusCodes.ACCEPTED).send('Practica eliminada');
+    const deletedPractice = await practiceService.delete(id);
+
+    if (!deletedPractice) {
+      throw new AppError('Error al eliminar la practica', StatusCodes.INTERNAL_SERVER_ERROR);
+    }
+    res.status(StatusCodes.OK).send(deletedPractice);
+  } catch (error) {
+    res.status(StatusCodes.INTERNAL_SERVER_ERROR)
+        .send({
+          error: error instanceof Error ? error.message : 'Error interno del servidor'
+        });
+  }
 }
 
-export { sanitizeInputPractice, findAll, findOne, update, create, remove };
+export { findAll, findOne, update, create, remove };

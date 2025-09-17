@@ -1,4 +1,3 @@
-
 import { Router } from 'express';
 import {findAll, findOne, create, update, remove } from "./typeAppointmentStatus.controller.js";
 

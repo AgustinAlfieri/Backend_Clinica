@@ -17,9 +17,9 @@ export class MedicalSpecialty {
   @ManyToMany(() => Medic, (medic) => medic.medicalSpecialty, { cascade: [Cascade.ALL], owner: true })
   medicalProfessionals = new Collection<Medic>(this);
 
-  constructor(name: string, practices: Collection<Practice>, medicalProfessionals: Collection<Medic>) {
+  constructor(name: string) {
     this.name = name;
-    this.practices = practices;
-    this.medicalProfessionals = medicalProfessionals;
+    this.practices = new Collection<Practice>(this);
+    this.medicalProfessionals = new Collection<Medic>(this);
   }
 }

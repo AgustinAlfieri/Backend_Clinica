@@ -10,12 +10,12 @@ export class TypeAppointmentStatusService {
 
     async findAll() {
         const _em = this._em.fork();
-        return await _em.find(TypeAppointmentStatus, {});   
+        return await _em.find(TypeAppointmentStatus, {}, {populate: ['appointmentStatus']});   
     }
 
     async findOne(id: string) {
         const _em = this._em.fork();
-        return await _em.findOne(TypeAppointmentStatus, id);
+        return await _em.findOne(TypeAppointmentStatus, id, {populate: ['appointmentStatus']});
     }
 
     async create(typeAppointmentStatus: TypeAppointmentStatusDTO) {
@@ -32,11 +32,14 @@ export class TypeAppointmentStatusService {
         const _em = this._em.fork();
         const existingTypeAppointmentStatus = await _em.findOne(TypeAppointmentStatus, id);
         
+
         if (!existingTypeAppointmentStatus) {
             throw new Error('No se encontró el estado de cita médica');
         }
         
         const newTypeAppointmentStatus = new TypeAppointmentStatus();
+        
+        newTypeAppointmentStatus.id = existingTypeAppointmentStatus.id;
         newTypeAppointmentStatus.name = typeAppointmentStatus.name || existingTypeAppointmentStatus.name;
 
         _em.assign(existingTypeAppointmentStatus, newTypeAppointmentStatus);
