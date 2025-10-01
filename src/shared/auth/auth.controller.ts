@@ -8,16 +8,16 @@ export async function login(req: Request, res: Response) {
         const credentials : authService.userCredentials = req.body;
 
         // Validation credentials could be added here or in a middleware
-            if (
-              !credentials.email ||
-              !credentials.password ||
-              !credentials.role
-            ) {
-              res.status(StatusCodes.BAD_REQUEST).json({
-                message: "Email, password y role son requeridos",
-              });
-              return;
-            }
+   //         if (
+     //         !credentials.email ||
+       //       !credentials.password ||
+         //     !credentials.role
+           // ) {
+         //     res.status(StatusCodes.BAD_REQUEST).json({
+          //      message: "Email, password y role son requeridos",
+        //      });
+            //  return;
+         //   }
         const result = await authService.login(credentials);
         
         //res.status(200).send(result);

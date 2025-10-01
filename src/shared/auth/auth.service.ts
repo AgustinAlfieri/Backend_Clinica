@@ -90,7 +90,7 @@ export const login = async (credentials: userCredentials) : Promise<AuthResponse
   const _em = em.fork(); // create a new EntityManager instance for this request
   const { email,dni, password, role } = credentials;
 
-  if(!email || !dni) {
+  if(!email && !dni) {
     throw new Error('Email o DNI son requeridos');
   }
 

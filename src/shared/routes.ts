@@ -20,5 +20,5 @@ export default (app: Application) => {
     app.use('/app/v1/administrative', administrativeRouter);
     app.use('/app/v1/practice', practiceRouter);
     app.use('/app/v1/medicalInsurance', medicalInsuranceRouter);
-    app.use('/api/v1/auth', authRouter);
+    app.use('/app/v1/auth', authRouter);
 }
