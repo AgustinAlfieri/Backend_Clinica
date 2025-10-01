@@ -1,18 +1,17 @@
-import { Property } from '@mikro-orm/core';
-import { PrimaryKey } from '@mikro-orm/core';
-import { nanoid } from 'nanoid/non-secure';
+import { PrimaryKey, Property } from "@mikro-orm/core";
+import { nanoid } from "nanoid/non-secure";
 
 export class User {
   @PrimaryKey()
   id: string = Date.now() + nanoid(14);
-  
-  @Property({ unique: true })
+
+  @Property()
   public dni!: string;
 
   @Property()
   public name!: string;
 
-  @Property({ unique: true })
+  @Property()
   public email!: string;
 
   @Property()
@@ -23,5 +22,4 @@ export class User {
 
   @Property()
   public role!: string;
-
 }

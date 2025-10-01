@@ -10,5 +10,5 @@ export const administrativeRouter = Router();
 administrativeRouter.get('/findAll', authMiddleware, checkPermissionMiddleware(Role.ADMINISTRATIVE, actions.VIEW), findAll);
 administrativeRouter.get('/findOne/:id', authMiddleware, checkPermissionMiddleware(Role.ADMINISTRATIVE, actions.VIEW), findOne);
 administrativeRouter.post('/update/:id', authMiddleware, checkPermissionMiddleware(Role.ADMINISTRATIVE, actions.UPDATE), update);
-administrativeRouter.post('/create', authMiddleware, checkPermissionMiddleware(Role.ADMINISTRATIVE, actions.CREATE), create);
+administrativeRouter.post('/create', create); // authMiddleware, checkPermissionMiddleware(Role.ADMINISTRATIVE, actions.CREATE),
 administrativeRouter.delete('/remove/:id', authMiddleware, checkPermissionMiddleware(Role.ADMINISTRATIVE, actions.DELETE), remove);

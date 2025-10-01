@@ -12,10 +12,41 @@ import { PatientService } from '../../user/userTypes/patient/patient.service.js'
 import { MedicService } from '../../user/userTypes/medic/medic.service.js';
 import { AdministrativeService } from '../../user/userTypes/administrative/administrative.service.js';
 
-export interface DataNewUser { role: string; id: string; dni: string; name: string; email: string; password: string; telephone: string; license: string; specialty: string; insuranceNumber: string; medicalInsurance: MedicalInsurance; medicalSpecialty: Collection<MedicalSpecialty>; appointments: Collection<Appointment>; }
-export interface userCredentials { email: string; password: string; role: string; }
-export interface payload { userId: string; role: string; iat: number; }
-export interface AuthResponse { token: string; user: { id: string; email: string; role: string; }; }
+export interface DataNewUser { role: string; 
+  id: string; 
+  dni: string; 
+  name: string; 
+  email: string; 
+  password: string; 
+  telephone: string; 
+  license: string; 
+  specialty: string; 
+  insuranceNumber: string; 
+  medicalInsurance: MedicalInsurance; 
+  medicalSpecialty: Collection<MedicalSpecialty>; 
+  appointments: Collection<Appointment>; 
+}
+export interface userCredentials { 
+  email?: string;
+  dni?: string; 
+  password: string; 
+  role: string; 
+}
+export interface payload { 
+  userId: string; 
+  role: string; 
+  iat: number; 
+}
+export interface AuthResponse { 
+  token: string; 
+  user: { 
+    id: string; 
+    email: string; 
+    role: string; 
+    dni?: string;
+    name?: string;
+  }; 
+}
 const em = orm.em;
 
 export const hashPassword = async (password: string): Promise<string> => {
@@ -56,15 +87,16 @@ export const verifyToken = (token: string): payload => {
 };
 
 export const login = async (credentials: userCredentials) : Promise<AuthResponse> => {
-  const _em = em.fork();
-  const email =  credentials.email;
-  const password = credentials.password;
-  const role = credentials.role;
-  
-  if(!email || !password) {
-    throw new Error('Email y contraseña son requeridos');
+  const _em = em.fork(); // create a new EntityManager instance for this request
+  const { email,dni, password, role } = credentials;
+
+  if(!email || !dni) {
+    throw new Error('Email o DNI son requeridos');
   }
 
+  if(!password || !role) {
+    throw new Error('Password y role son requeridos');
+  }
   //Veo que rol es, sino despues me da error de properties
   let userEntity;
   switch(role) {
@@ -82,7 +114,9 @@ export const login = async (credentials: userCredentials) : Promise<AuthResponse
   }
 
   //Busco usuario
-  const user = await _em.findOne(userEntity, { email: email, role: role });
+  const searchBy = email ? { email,role } : { dni,role };
+
+  const user = await _em.findOne(userEntity, searchBy);
 
   if (!user) {
     throw new Error('Usuario no encontrado');
@@ -100,7 +134,9 @@ export const login = async (credentials: userCredentials) : Promise<AuthResponse
     user: {
       id: user.id,
       email: user.email,
-      role: user.role
+      role: user.role,
+      dni: user.dni,
+      name: user.name
     }
   };
 }
@@ -109,22 +145,37 @@ export const login = async (credentials: userCredentials) : Promise<AuthResponse
 export const register = async (dataNewUser: DataNewUser): Promise<AuthResponse> => {
   //No hago el fork aca porque lo hacen los servicios
   //const _em = em.fork();
+  if (!dataNewUser.name || !dataNewUser.email || !dataNewUser.password || !dataNewUser.role) {
+    throw new Error('Faltan datos requeridos');
+  }
+
+  const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+
+  if (!emailRegex.test(dataNewUser.email)) {
+    throw new Error('Email inválido');
+  }
+
+  if (dataNewUser.password.length < 8) {
+    throw new Error('La contraseña debe tener al menos 8 caracteres');
+  }
+
+  let newUserId: string;
 
   switch(dataNewUser.role) {
     case 'Patient':
       const pService = new PatientService(em); 
       const newPatient = await pService.create(dataNewUser);
-      dataNewUser.id = newPatient.id;
+      newUserId = newPatient.id;
       break;
     case 'Medic':
       const mService = new MedicService(em); 
       const newMedic = await mService.create(dataNewUser);
-      dataNewUser.id = newMedic.id;   //para poder firmar ok el token
+      newUserId = newMedic.id;   //para poder firmar ok el token
       break;
     case 'Administrative':
       const aService = new AdministrativeService(em); 
       const newAdministrative = await aService.create(dataNewUser);
-      dataNewUser.id = newAdministrative.id;
+      newUserId = newAdministrative.id;
       break;
     default:
       throw new Error('Rol inválido');
@@ -134,10 +185,12 @@ export const register = async (dataNewUser: DataNewUser): Promise<AuthResponse> 
   return {
     token,
     user: {
-      id: dataNewUser.id,
+      id: newUserId,
       email: dataNewUser.email,
-      role: dataNewUser.role
-    }
+      role: dataNewUser.role,
+      dni: dataNewUser.dni,
+      name: dataNewUser.name
+    },
   };
 
 }

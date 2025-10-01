@@ -52,6 +52,11 @@ async function findOne(req: Request, res: Response) {
 }
 
 async function create(req: Request, res: Response) {
+  console.log("--- NEW CREATE REQUEST ---");
+  console.log("Headers:", req.headers);
+  console.log("Content-Type header:", req.get("content-type"));
+  console.log("Raw body (req.body):", req.body);
+  console.log("Is body undefined?", req.body === undefined);
   try{
     const aService = new AdministrativeService(em);
     const administrative = await aService.create(req.body);
