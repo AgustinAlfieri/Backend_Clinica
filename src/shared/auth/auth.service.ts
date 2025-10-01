@@ -12,40 +12,41 @@ import { PatientService } from '../../user/userTypes/patient/patient.service.js'
 import { MedicService } from '../../user/userTypes/medic/medic.service.js';
 import { AdministrativeService } from '../../user/userTypes/administrative/administrative.service.js';
 
-export interface DataNewUser { role: string; 
-  id: string; 
-  dni: string; 
-  name: string; 
-  email: string; 
-  password: string; 
-  telephone: string; 
-  license: string; 
-  specialty: string; 
-  insuranceNumber: string; 
-  medicalInsurance: MedicalInsurance; 
-  medicalSpecialty: Collection<MedicalSpecialty>; 
-  appointments: Collection<Appointment>; 
+export interface DataNewUser {
+  role: string;
+  id: string;
+  dni: string;
+  name: string;
+  email: string;
+  password: string;
+  telephone: string;
+  license: string;
+  specialty: string;
+  insuranceNumber: string;
+  medicalInsurance: MedicalInsurance;
+  medicalSpecialty: Collection<MedicalSpecialty>;
+  appointments: Collection<Appointment>;
 }
-export interface userCredentials { 
+export interface userCredentials {
   email?: string;
-  dni?: string; 
-  password: string; 
-  role: string; 
+  dni?: string;
+  password: string;
+  role: string;
 }
-export interface payload { 
-  userId: string; 
-  role: string; 
-  iat: number; 
+export interface payload {
+  userId: string;
+  role: string;
+  iat: number;
 }
-export interface AuthResponse { 
-  token: string; 
-  user: { 
-    id: string; 
-    email: string; 
-    role: string; 
+export interface AuthResponse {
+  token: string;
+  user: {
+    id: string;
+    email: string;
+    role: string;
     dni?: string;
     name?: string;
-  }; 
+  };
 }
 const em = orm.em;
 
@@ -58,11 +59,10 @@ export const comparePassword = async (password: string, hashedPassword: string):
   return await bcrypt.compare(password, hashedPassword);
 };
 
-
 export const generateToken = (userId: string, role: string): string => {
-  const secret = process.env.SECRET || 'sinSecret';  //hacer un get
-  
-  const payload :  payload = {
+  const secret = process.env.SECRET || 'sinSecret'; //hacer un get
+
+  const payload: payload = {
     userId: userId,
     role: role,
     iat: Date.now() / 1000
@@ -79,27 +79,27 @@ export const verifyToken = (token: string): payload => {
     return {
       userId: decoded.userId,
       role: decoded.role,
-      iat:  decoded.iat
+      iat: decoded.iat
     };
   } catch (error) {
-      throw new Error('Token inválido');
+    throw new Error('Token inválido');
   }
 };
 
-export const login = async (credentials: userCredentials) : Promise<AuthResponse> => {
+export const login = async (credentials: userCredentials): Promise<AuthResponse> => {
   const _em = em.fork(); // create a new EntityManager instance for this request
-  const { email,dni, password, role } = credentials;
+  const { email, dni, password, role } = credentials;
 
-  if(!email && !dni) {
+  if (!email && !dni) {
     throw new Error('Email o DNI son requeridos');
   }
 
-  if(!password || !role) {
+  if (!password || !role) {
     throw new Error('Password y role son requeridos');
   }
   //Veo que rol es, sino despues me da error de properties
   let userEntity;
-  switch(role) {
+  switch (role) {
     case 'Patient':
       userEntity = Patient;
       break;
@@ -114,7 +114,7 @@ export const login = async (credentials: userCredentials) : Promise<AuthResponse
   }
 
   //Busco usuario
-  const searchBy = email ? { email,role } : { dni,role };
+  const searchBy = email ? { email, role } : { dni, role };
 
   const user = await _em.findOne(userEntity, searchBy);
 
@@ -139,7 +139,7 @@ export const login = async (credentials: userCredentials) : Promise<AuthResponse
       name: user.name
     }
   };
-}
+};
 
 //Para registrar un nuevo usuario
 export const register = async (dataNewUser: DataNewUser): Promise<AuthResponse> => {
@@ -161,19 +161,19 @@ export const register = async (dataNewUser: DataNewUser): Promise<AuthResponse> 
 
   let newUserId: string;
 
-  switch(dataNewUser.role) {
+  switch (dataNewUser.role) {
     case 'Patient':
-      const pService = new PatientService(em); 
+      const pService = new PatientService(em);
       const newPatient = await pService.create(dataNewUser);
       newUserId = newPatient.id;
       break;
     case 'Medic':
-      const mService = new MedicService(em); 
+      const mService = new MedicService(em);
       const newMedic = await mService.create(dataNewUser);
-      newUserId = newMedic.id;   //para poder firmar ok el token
+      newUserId = newMedic.id; //para poder firmar ok el token
       break;
     case 'Administrative':
-      const aService = new AdministrativeService(em); 
+      const aService = new AdministrativeService(em);
       const newAdministrative = await aService.create(dataNewUser);
       newUserId = newAdministrative.id;
       break;
@@ -190,7 +190,6 @@ export const register = async (dataNewUser: DataNewUser): Promise<AuthResponse> 
       role: dataNewUser.role,
       dni: dataNewUser.dni,
       name: dataNewUser.name
-    },
+    }
   };
-
-}
+};
