@@ -4,7 +4,7 @@ import { Patient } from '../user/userTypes/patient/patient.entity.js';
 import { nanoid } from 'nanoid';
 
 @Entity()
-export class MedicalInsurance{
+export class MedicalInsurance {
   @PrimaryKey()
   id?: string = Date.now() + nanoid(14);
 
@@ -17,8 +17,7 @@ export class MedicalInsurance{
   @OneToMany(() => Patient, (patient) => patient.medicalInsurance, { cascade: [Cascade.ALL] })
   clients = new Collection<Patient>(this);
 
-  constructor(name: string, coveredPractices: Collection<Practice>, clients: Collection<Patient>)
-  {
+  constructor(name: string, coveredPractices: Collection<Practice>, clients: Collection<Patient>) {
     this.name = name;
     this.coveredPractices = coveredPractices;
     this.clients = clients;

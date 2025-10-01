@@ -16,7 +16,7 @@
   "license": "ISC",
   "packageManager": "pnpm@10.8.0",
   "devDependencies": {
-    "@types/bcrypt": "^6.0.0",
+    "@types/bcrypt": "6.0.0",
     "@types/express": "5.0.1",
     "@types/jsonwebtoken": "^9.0.10",
     "@types/node": "22.15.3",
@@ -28,6 +28,7 @@
     "@mikro-orm/mysql": "6.4.15",
     "@mikro-orm/sql-highlighter": "1.0.1",
     "bcrypt": "^6.0.0",
+    "bcryptjs": "3.0.2",
     "dotenv": "^16.5.0",
     "express": "5.1.0",
     "http-status-codes": "2.3.0",
