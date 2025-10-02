@@ -1,81 +1,108 @@
-import { Request, Response, NextFunction } from "express";
-import { orm } from "../shared/database/orm.js";
-import { Appointment } from "./appointment.entity.js";
-import { StatusCodes } from "http-status-codes";
-import { AppError } from "../shared/errorManagment/appError.js";
-import { Practice } from "../practice/practice.entity.js";
-import { Collection } from "@mikro-orm/core";
+import { orm } from '../shared/database/orm.js';
+import { Request, Response } from 'express';
+import { Appointment } from './appointment.entity.js';
+import { StatusCodes } from 'http-status-codes';
+import { logger } from '../shared/logger/logger.js';
+import { AppointmentService } from './appointment.service.js';
 
-const em = orm.em;
+const em = orm.em.fork();
 
-function sanitizeInputAppointment(req: Request, _: Response, next: NextFunction) {
-  const { patient, medic, practicesIds } = req.body;
+async function findAll(req: Request, res: Response) {
+  try {
+    const appointmentService = new AppointmentService(em);
+    const appointments = await appointmentService.findAll();
 
-  em.find(Practice, {id : practicesIds}).then((practices) => {
-    req.body.sanitizedInput = {
-      appointmentDate: new Date(),
-      patient,
-      medic,
-      practices: new Collection<Practice>(practices)
-    };
-    next();
-  }).catch(() => {
-    req.body.sanitizedInput = {
-      patient,
-      medic,
-      practices: undefined
-    };
-    next();
-  })
-}
+    if (!appointments || appointments.length === 0) {
+      res.status(StatusCodes.NOT_FOUND).send({ message: 'No se encontraron turnos' });
+      return;
+    }
 
-async function findAll(req: Request, res: Response){
-    em.find(Appointment, {}).then((appointments) => {
-        if(!appointments) { res.status(StatusCodes.NOT_FOUND).send("No se encontraron turnos"); return; }
-        res.status(StatusCodes.OK).send(appointments);
+    res.status(StatusCodes.OK).send({ message: 'Turnos encontrados', data: appointments });
+  } catch (error) {
+    logger.error(error);
+    res.status(StatusCodes.INTERNAL_SERVER_ERROR).send({
+      error: error instanceof Error ? error.message : 'Error al obtener los turnos'
     });
-    return;
+  }
 }
 
-async function findOne(req: Request, res: Response){
-    const id = req.params.id;
-    em.findOne(Appointment, { id }).then((ap) => {
-        if(!ap) { res.status(StatusCodes.NOT_FOUND).send("No se encontro el turno solicitado"); return; }
-        res.status(StatusCodes.OK).send(ap);
+async function findOne(req: Request, res: Response) {
+  try {
+    const id: string = req.params.id;
+    const appointmentService = new AppointmentService(em);
+    const appointment = await appointmentService.findOne(id);
+
+    if (!appointment) {
+      res.status(StatusCodes.NOT_FOUND).send({ message: 'Turno no encontrado' });
+      return;
+    }
+
+    res.status(StatusCodes.OK).send({ message: 'Turno encontrado', data: appointment });
+  } catch (error) {
+    logger.error(error);
+    res.status(StatusCodes.INTERNAL_SERVER_ERROR).send({
+      error: error instanceof Error ? error.message : 'Error al obtener el turno'
     });
-    return;
+  }
 }
-
 
 async function create(req: Request, res: Response) {
-    
-    const appointment = em.create(
-        Appointment, req.body.sanitizedInput);
+  try {
+    const appointmentService = new AppointmentService(em);
+    const appointment = await appointmentService.create(req.body);
 
-    await em.persistAndFlush(appointment);
-    res.status(StatusCodes.CREATED).send(appointment);
+    if (!appointment) {
+      res.status(StatusCodes.BAD_REQUEST).send({ message: 'No se pudo crear el turno' });
+      return;
+    }
+
+    res.status(StatusCodes.CREATED).send({ message: 'Turno creado', data: appointment });
+  } catch (error) {
+    logger.error(error);
+    res.status(StatusCodes.INTERNAL_SERVER_ERROR).send({
+      error: error instanceof Error ? error.message : 'Error al crear el turno'
+    });
+  }
 }
 
 async function update(req: Request, res: Response) {
+  try {
     const id: string = req.params.id;
-    const { sanitizedInput } = req.body;
-    const appointment = await em.findOne(Appointment, { id });
+    const appointmentService = new AppointmentService(em);
+    const appointment = await appointmentService.update(id, req.body);
+
     if (!appointment) {
-        throw new AppError("No se encontro el turno solicitado", StatusCodes.NOT_FOUND);
+      res.status(StatusCodes.BAD_REQUEST).send({ message: 'No se pudo actualizar el turno' });
+      return;
     }
-    em.assign(appointment, sanitizedInput);
-    await em.persistAndFlush(appointment);
-    res.status(StatusCodes.OK).send(appointment);
+
+    res.status(StatusCodes.OK).send({ message: 'Turno actualizado', data: appointment });
+  } catch (error) {
+    logger.error(error);
+    res.status(StatusCodes.INTERNAL_SERVER_ERROR).send({
+      error: error instanceof Error ? error.message : 'Error al actualizar el turno'
+    });
+  }
 }
 
 async function remove(req: Request, res: Response) {
+  try {
     const id: string = req.params.id;
-    const appointment = await em.findOne(Appointment, { id });
-    if (!appointment) {
-        throw new AppError("No se encontro el turno solicitado", StatusCodes.NOT_FOUND);
+    const appointmentService = new AppointmentService(em);
+    const removed = await appointmentService.remove(id);
+
+    if (!removed) {
+      res.status(StatusCodes.NOT_FOUND).send({ message: 'No se pudo eliminar el turno' });
+      return;
     }
-    await em.removeAndFlush(appointment);
-    res.status(StatusCodes.NO_CONTENT).send();
+
+    res.status(StatusCodes.OK).send({ message: 'Turno eliminado' });
+  } catch (error) {
+    logger.error(error);
+    res.status(StatusCodes.INTERNAL_SERVER_ERROR).send({
+      error: error instanceof Error ? error.message : 'Error al eliminar el turno'
+    });
+  }
 }
 
-export { findAll, findOne, create, update, remove, sanitizeInputAppointment };
+export { findAll, findOne, create, update, remove };
