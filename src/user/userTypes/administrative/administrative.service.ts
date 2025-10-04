@@ -73,14 +73,17 @@ export class AdministrativeService {
         newAdministrativeData.email = administrative.email || existingAdministrative.email;
         newAdministrativeData.telephone = administrative.telephone || existingAdministrative.telephone;
 
-        if(administrative.password) {
-            const isDistinct =  comparePassword(administrative.password, existingAdministrative.password);
-            if(!isDistinct)
-                newAdministrativeData.password = await hashPassword(administrative.password);
-            else
-                newAdministrativeData.password = existingAdministrative.password;
-        } else {
+        //validate if password has changed
+        if(!administrative.password){
             newAdministrativeData.password = existingAdministrative.password;
+        }
+        else {
+            const noChangePassword : boolean = await comparePassword(administrative.password, existingAdministrative.password);
+
+            if(noChangePassword)
+                newAdministrativeData.password = existingAdministrative.password;
+            else
+                newAdministrativeData.password = await hashPassword(administrative.password);
         }
 
         newAdministrativeData.appointments = new Collection<Appointment>(newAdministrativeData);

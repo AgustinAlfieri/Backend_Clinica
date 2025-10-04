@@ -1,10 +1,9 @@
 import { EntityManager } from "@mikro-orm/mysql";
 import { Patient } from "./patient.entity.js";
-import { DataNewUser, hashPassword } from "../../../shared/auth/auth.service.js";
+import { comparePassword, DataNewUser, hashPassword } from "../../../shared/auth/auth.service.js";
 import { MedicalInsurance } from "../../../medicalInsurance/medicalInsurance.entity.js";
 import { Role } from "../../../shared/enums/role.enum.js";
 import { logger } from "../../../shared/logger/logger.js";
-import { compare } from "bcrypt";
 
 export class PatientService {
   constructor(private em: EntityManager) {}
@@ -78,14 +77,17 @@ export class PatientService {
         }
 
         //validate if password has changed
-        if(!patientUpdate.password) patientUpdate.password = patient.password;
-
-        const changePassword : boolean = await compare(patientUpdate.password || '', patient.password);
-        
-        if(changePassword)
-            newPatientData.password = await hashPassword(patientUpdate.password);
-        else
+        if(!patientUpdate.password){
             newPatientData.password = patient.password;
+        }
+        else {
+            const noChangePassword : boolean = await comparePassword(patientUpdate.password, patient.password);
+
+            if(noChangePassword)
+                newPatientData.password = patient.password;
+            else
+                newPatientData.password = await hashPassword(patientUpdate.password);
+        }
 
         newPatientData.dni = patientUpdate.dni || patient.dni;
         newPatientData.name = patientUpdate.name || patient.name;

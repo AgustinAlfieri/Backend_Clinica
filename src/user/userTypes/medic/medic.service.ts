@@ -75,12 +75,17 @@ export class MedicService {
       }
 
       //validate if password has changed
-      if (!medicUpdate.password) newMedicData.password = medic.password;
-      else {
-        const isDistinct: boolean = await comparePassword(medicUpdate.password || '', medic.password);
-        if (!isDistinct) newMedicData.password = await hashPassword(medicUpdate.password || '');
-        else newMedicData.password = medic.password;
+      if(!medicUpdate.password){
+          newMedicData.password = medic.password;
       }
+      else {
+          const noChangePassword : boolean = await comparePassword(medicUpdate.password, medic.password);
+
+            if(noChangePassword)
+                newMedicData.password = medic.password;
+            else
+                newMedicData.password = await hashPassword(medicUpdate.password);
+        }
 
       newMedicData.dni = medicUpdate.dni || medic.dni;
       newMedicData.name = medicUpdate.name || medic.name;

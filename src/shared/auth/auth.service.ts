@@ -11,6 +11,7 @@ import { Appointment } from '../../appointment/appointment.entity.js';
 import { PatientService } from '../../user/userTypes/patient/patient.service.js';
 import { MedicService } from '../../user/userTypes/medic/medic.service.js';
 import { AdministrativeService } from '../../user/userTypes/administrative/administrative.service.js';
+import { customFinder } from '../middlewares/customFinders.js';
 
 export interface DataNewUser {
   role: string;
@@ -28,6 +29,7 @@ export interface DataNewUser {
   appointments: Collection<Appointment>;
 }
 export interface userCredentials {
+  input: string;
   email?: string;
   dni?: string;
   password: string;
@@ -87,15 +89,21 @@ export const verifyToken = (token: string): payload => {
 };
 
 export const login = async (credentials: userCredentials): Promise<AuthResponse> => {
-  const _em = em.fork(); // create a new EntityManager instance for this request
-  const { email, dni, password, role } = credentials;
+  const _em = em.fork();
+  const { email, dni, password } = credentials;
+  let role = '';
+
+  //Busco el rol del usuario a loguear
+  let result = await customFinder({ dni: dni, email: email });
+  if (result)  role = result;
+
 
   if (!email && !dni) {
     throw new Error('Email o DNI son requeridos');
   }
 
-  if (!password || !role) {
-    throw new Error('Password y role son requeridos');
+  if (!password) {
+    throw new Error('La contraseña es requerida');
   }
   //Veo que rol es, sino despues me da error de properties
   let userEntity;
@@ -123,7 +131,8 @@ export const login = async (credentials: userCredentials): Promise<AuthResponse>
   }
 
   //Chequeo contraseña
-  const passwordMatch = await comparePassword(password, user.password); //Aca da error
+  const passwordMatch = await comparePassword(password, user.password);
+
   if (!passwordMatch) {
     throw new Error('Contraseña incorrecta');
   }
@@ -151,7 +160,7 @@ export const register = async (dataNewUser: DataNewUser): Promise<AuthResponse> 
 
   const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 
-  if (!emailRegex.test(dataNewUser.email)) {
+  if (!emailRegex.test(dataNewUser.email)) { //TODO: manejar en el front
     throw new Error('Email inválido');
   }
 
