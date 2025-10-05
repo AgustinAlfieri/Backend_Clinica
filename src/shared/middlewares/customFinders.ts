@@ -13,10 +13,6 @@ const customFinder = async (params: { dni?: string; email?: string }) : Promise<
     if (params.dni) { findBy = params.dni; isDni = true; }
     else if (params.email) { findBy = params.email; isDni = false; }
 
-    console.log("isDni: ", params.dni);
-    console.log("isEmail: ", params.email);
-    console.log("findBy: ", findBy);
-
     if(isDni){
         const userPatient = await em.findOne(Patient, { dni: findBy });
         if (userPatient) {
