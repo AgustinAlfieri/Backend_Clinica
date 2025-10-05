@@ -13,7 +13,7 @@ export const routerMedic = Router();
 //routerMedic.post('/create', authMiddleware, checkPermissionMiddleware(Role.MEDIC, actions.CREATE), create);
 //routerMedic.delete('/remove/:id', authMiddleware, checkPermissionMiddleware(Role.MEDIC, actions.DELETE), remove);
 
-routerMedic.get('/findAll', authMiddleware, checkPermissionMiddleware(Role.MEDIC, actions.VIEW), findAll);
+routerMedic.get('/findAll',findAll, authMiddleware, checkPermissionMiddleware(Role.MEDIC, actions.VIEW), findAll);
 routerMedic.get('/findOne/:id', findOne);
 routerMedic.post('/update/:id', authMiddleware, checkPermissionMiddleware(Role.MEDIC, actions.UPDATE), update);
 routerMedic.post('/create', create);

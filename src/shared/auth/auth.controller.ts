@@ -41,11 +41,12 @@ export async function login(req: Request, res: Response) {
 
 export async function register(req: Request, res: Response) {
     try{
+        console.log("Llegue al controller");
         const dataNewUser : authService.DataNewUser = req.body;
-        if(!dataNewUser.name || !dataNewUser.email || !dataNewUser.password || !dataNewUser.role) {
-            res.status(400).json({ message: 'Faltan datos requeridos' });
-            return;
-        }
+//        if(!dataNewUser.name || !dataNewUser.email || !dataNewUser.password || !dataNewUser.role) {
+//            res.status(400).json({ message: 'Faltan datos requeridos' });
+//            return;
+//        } Estas lineas estan silenciadas al pedo porque el error venia de que mandama el newUser sin Name sino con NOMBRE
         const result = await authService.register(dataNewUser);
 
         res.status(StatusCodes.CREATED).json({

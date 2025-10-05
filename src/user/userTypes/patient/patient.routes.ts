@@ -7,7 +7,7 @@ import { actions } from "../../../shared/permission/rolesPermission.js";
 
 export const patientRouter = Router();
 
-patientRouter.get('/findAll', authMiddleware, checkPermissionMiddleware( Role.PATIENT, actions.VIEW), findAll);
+patientRouter.get('/findAll',findAll, authMiddleware, checkPermissionMiddleware( Role.PATIENT, actions.VIEW), findAll);
 patientRouter.get('/findOne/:id', authMiddleware, checkPermissionMiddleware(Role.PATIENT, actions.VIEW), findOne);
 patientRouter.post('/create', authMiddleware, checkPermissionMiddleware(Role.PATIENT, actions.CREATE), create);
 patientRouter.post('/update/:id', authMiddleware, checkPermissionMiddleware(Role.PATIENT, actions.UPDATE), update);

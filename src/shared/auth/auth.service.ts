@@ -154,9 +154,7 @@ export const login = async (credentials: userCredentials): Promise<AuthResponse>
 export const register = async (dataNewUser: DataNewUser): Promise<AuthResponse> => {
   //No hago el fork aca porque lo hacen los servicios
   //const _em = em.fork();
-  if (!dataNewUser.name || !dataNewUser.email || !dataNewUser.password || !dataNewUser.role) {
-    throw new Error('Faltan datos requeridos');
-  }
+  console.log(dataNewUser);
 
   const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 
@@ -164,17 +162,21 @@ export const register = async (dataNewUser: DataNewUser): Promise<AuthResponse> 
     throw new Error('Email inválido');
   }
 
+  console.log("Hasta acá llego 1")
+
   if (dataNewUser.password.length < 8) {
     throw new Error('La contraseña debe tener al menos 8 caracteres');
   }
 
   let newUserId: string;
+  console.log("Hasta acá llego 2");
 
   switch (dataNewUser.role) {
     case 'Patient':
       const pService = new PatientService(em);
       const newPatient = await pService.create(dataNewUser);
       newUserId = newPatient.id;
+      console.log("Hasta acá llego 3");
       break;
     case 'Medic':
       const mService = new MedicService(em);
