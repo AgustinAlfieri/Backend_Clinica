@@ -1,0 +1,15 @@
+import winston from 'winston';
+
+export const logger = winston.createLogger({
+  level: 'debug',
+  format: winston.format.combine(
+    winston.format.timestamp(),
+    winston.format.printf(({ level, message, timestamp }) => {
+      return `[${timestamp}] ${level.toUpperCase()}: ${message}`;
+    })
+  ),
+  transports: [
+    new winston.transports.Console(), // in console
+    new winston.transports.File({ filename: 'app.log' }) // in file
+  ]
+});
