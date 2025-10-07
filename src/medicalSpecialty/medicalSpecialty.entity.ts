@@ -1,5 +1,5 @@
 import { Cascade, Collection, Entity, ManyToMany, OneToMany, Property, PrimaryKey } from '@mikro-orm/core';
-import { Practice } from '../Practice/practice.entity.js';
+import { Practice } from '../practice/practice.entity.js';
 import { Medic } from '../user/userTypes/medic/medic.entity.js';
 import { nanoid } from 'nanoid';
 

@@ -1,6 +1,6 @@
 import { EntityManager, Collection } from '@mikro-orm/mysql';
 import { Appointment } from './appointment.entity.js';
-import { Practice } from '../Practice/practice.entity.js';
+import { Practice } from '../practice/practice.entity.js';
 import { Patient } from '../user/userTypes/patient/patient.entity.js';
 import { Medic } from '../user/userTypes/medic/medic.entity.js';
 import { Administrative } from '../user/userTypes/administrative/administrative.entity.js';

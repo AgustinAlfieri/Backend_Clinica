@@ -1,6 +1,6 @@
 import { Collection, EntityManager } from '@mikro-orm/mysql';
 import { MedicalSpecialty } from './medicalSpecialty.entity.js';
-import { Practice } from '../Practice/practice.entity.js';
+import { Practice } from '../practice/practice.entity.js';
 import { Medic } from '../user/userTypes/medic/medic.entity.js';
 
 interface MedicalSpecialtyDTO {

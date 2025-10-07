@@ -3,7 +3,7 @@ import { administrativeRouter } from '../user/userTypes/administrative/administr
 import { medicalInsuranceRouter } from '../medicalInsurance/medicalInsurance.routes.js';
 import { medicalSpecialtyRouter } from '../medicalSpecialty/medicalSpecialty.routes.js';
 import { patientRouter } from '../user/userTypes/patient/patient.routes.js';
-import { practiceRouter } from '../Practice/practice.routes.js';
+import { practiceRouter } from '../practice/practice.routes.js';
 import { routerMedic } from '../user/userTypes/medic/medic.routes.js';
 import { typeAppointmentStatusRouter } from '../typeAppointmentStatus/typeAppointmentStatus.routes.js';
 import { appointmentStatusRouter } from '../appointmentStatus/appointmentStatus.routes.js'; // Import the appointmentStatus router

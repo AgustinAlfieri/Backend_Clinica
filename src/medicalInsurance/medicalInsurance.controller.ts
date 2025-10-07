@@ -1,6 +1,6 @@
 import { orm } from '../shared/database/orm.js';
 import { NextFunction, Request, Response } from 'express';
-import { MedicalInsurance } from './medicalinsurance.entity.js';
+import { MedicalInsurance } from './medicalInsurance.entity.js';
 import { AppError } from '../shared/errorManagment/appError.js';
 import { StatusCodes } from 'http-status-codes';
 
