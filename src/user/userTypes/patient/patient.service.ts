@@ -1,9 +1,9 @@
-import { EntityManager } from "@mikro-orm/mysql";
-import { Patient } from "./patient.entity.js";
-import { comparePassword, DataNewUser, hashPassword } from "../../../shared/auth/auth.service.js";
-import { MedicalInsurance } from "../../../medicalInsurance/medicalInsurance.entity.js";
-import { Role } from "../../../shared/enums/role.enum.js";
-import { logger } from "../../../shared/logger/logger.js";
+import { EntityManager } from '@mikro-orm/mysql';
+import { Patient } from './patient.entity.js';
+import { comparePassword, DataNewUser, hashPassword } from '../../../shared/auth/auth.service.js';
+import { MedicalInsurance } from '../../../medicalInsurance/medicalinsurance.entity.js';
+import { Role } from '../../../shared/enums/role.enum.js';
+import { logger } from '../../../shared/logger/logger.js';
 
 export class PatientService {
   constructor(private em: EntityManager) {}
@@ -18,11 +18,11 @@ export class PatientService {
     return await _em.findOne(Patient, id, { populate: ['medicalInsurance', 'appointments'] });
   }
 
-  async create(patient: DataNewUser) : Promise<Patient> {
+  async create(patient: DataNewUser): Promise<Patient> {
     const _em = this.em.fork();
     const existPatient = await _em.findOne(Patient, { dni: patient.dni });
     const newPatient = new Patient();
-    console.log("Insurance number: ", patient.insuranceNumber);
+    console.log('Insurance number: ', patient.insuranceNumber);
 
     //important!!!
     if (existPatient) {
@@ -30,8 +30,8 @@ export class PatientService {
     }
 
     console.log(patient);
-    if(!patient.password || !patient.email || !patient.dni || !patient.name) {
-        throw new Error('Todos los campos son obligatorios');
+    if (!patient.password || !patient.email || !patient.dni || !patient.name) {
+      throw new Error('Todos los campos son obligatorios');
     }
 
     //No plain text password
@@ -42,20 +42,19 @@ export class PatientService {
     newPatient.name = patient.name;
     newPatient.email = patient.email;
 
-    (patient.telephone) ? 
-        newPatient.telephone = patient.telephone : newPatient.telephone = undefined;
-    (patient.insuranceNumber) ?
-        newPatient.insuranceNumber = patient.insuranceNumber: newPatient.insuranceNumber = null;
+    patient.telephone ? (newPatient.telephone = patient.telephone) : (newPatient.telephone = undefined);
+    patient.insuranceNumber
+      ? (newPatient.insuranceNumber = patient.insuranceNumber)
+      : (newPatient.insuranceNumber = null);
 
     if (patient.medicalInsurance) {
-        const medicalInsurance = await _em.findOne(MedicalInsurance, patient.medicalInsurance);
+      const medicalInsurance = await _em.findOne(MedicalInsurance, patient.medicalInsurance);
 
-        if (!medicalInsurance) 
-            throw new Error('La obra social no existe');
+      if (!medicalInsurance) throw new Error('La obra social no existe');
 
-        newPatient.medicalInsurance = medicalInsurance;
+      newPatient.medicalInsurance = medicalInsurance;
     } else {
-        newPatient.medicalInsurance = undefined;
+      newPatient.medicalInsurance = undefined;
     }
 
     newPatient.role = Role.PATIENT;
@@ -64,70 +63,65 @@ export class PatientService {
     return newPatient;
   }
 
-  async update(id: string, patientUpdate: Partial<DataNewUser>) : Promise<Patient | null> {
+  async update(id: string, patientUpdate: Partial<DataNewUser>): Promise<Patient | null> {
     try {
-        const _em = this.em.fork();
-        const patient = await _em.findOneOrFail(Patient, id);
-        const newPatientData = new Patient();
+      const _em = this.em.fork();
+      const patient = await _em.findOneOrFail(Patient, id);
+      const newPatientData = new Patient();
 
-        //very important!!!!!!!"!"!"
-        newPatientData.id = id;
+      //very important!!!!!!!"!"!"
+      newPatientData.id = id;
 
-        if(!patient){
-            throw new Error('No se encontró el paciente');
-        }
+      if (!patient) {
+        throw new Error('No se encontró el paciente');
+      }
 
-        //validate if password has changed
-        if(!patientUpdate.password){
-            newPatientData.password = patient.password;
-        }
-        else {
-            const noChangePassword : boolean = await comparePassword(patientUpdate.password, patient.password);
+      //validate if password has changed
+      if (!patientUpdate.password) {
+        newPatientData.password = patient.password;
+      } else {
+        const noChangePassword: boolean = await comparePassword(patientUpdate.password, patient.password);
 
-            if(noChangePassword)
-                newPatientData.password = patient.password;
-            else
-                newPatientData.password = await hashPassword(patientUpdate.password);
-        }
+        if (noChangePassword) newPatientData.password = patient.password;
+        else newPatientData.password = await hashPassword(patientUpdate.password);
+      }
 
-        newPatientData.dni = patientUpdate.dni || patient.dni;
-        newPatientData.name = patientUpdate.name || patient.name;
-        newPatientData.email = patientUpdate.email || patient.email;
-        newPatientData.telephone = patientUpdate.telephone || patient.telephone;
-        newPatientData.insuranceNumber = patientUpdate.insuranceNumber || patient.insuranceNumber;
+      newPatientData.dni = patientUpdate.dni || patient.dni;
+      newPatientData.name = patientUpdate.name || patient.name;
+      newPatientData.email = patientUpdate.email || patient.email;
+      newPatientData.telephone = patientUpdate.telephone || patient.telephone;
+      newPatientData.insuranceNumber = patientUpdate.insuranceNumber || patient.insuranceNumber;
 
-        if (patientUpdate.medicalInsurance) {
-            const medicalInsurance = await _em.findOne(MedicalInsurance, patientUpdate.medicalInsurance);
-            
-            if (!medicalInsurance)
-                throw new Error('La obra social no existe');
+      if (patientUpdate.medicalInsurance) {
+        const medicalInsurance = await _em.findOne(MedicalInsurance, patientUpdate.medicalInsurance);
 
-            newPatientData.medicalInsurance = medicalInsurance;
-        } else {
-            newPatientData.medicalInsurance = patient.medicalInsurance;
-        }
+        if (!medicalInsurance) throw new Error('La obra social no existe');
 
-        newPatientData.role = Role.PATIENT;
+        newPatientData.medicalInsurance = medicalInsurance;
+      } else {
+        newPatientData.medicalInsurance = patient.medicalInsurance;
+      }
 
-        _em.assign(patient, newPatientData);
-        await _em.flush();
+      newPatientData.role = Role.PATIENT;
 
-        return patient;
+      _em.assign(patient, newPatientData);
+      await _em.flush();
+
+      return patient;
     } catch (error) {
-        logger.error("Error al actualizar paciente", error);
-        return null;
+      logger.error('Error al actualizar paciente', error);
+      return null;
     }
   }
 
   async remove(id: string) {
-    try{
-        const _em = this.em.fork();
-        const patient = await _em.findOneOrFail(Patient, id);
-        await _em.removeAndFlush(patient);
+    try {
+      const _em = this.em.fork();
+      const patient = await _em.findOneOrFail(Patient, id);
+      await _em.removeAndFlush(patient);
     } catch (error) {
-        logger.error("Error al eliminar paciente", error);  
-        return false;
+      logger.error('Error al eliminar paciente', error);
+      return false;
     }
   }
-
 }

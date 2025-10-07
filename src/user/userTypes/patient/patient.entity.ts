@@ -1,11 +1,11 @@
 import { Entity, ManyToOne, Rel, OneToMany, Cascade, Collection, Property } from '@mikro-orm/core';
 import { Appointment } from '../../../appointment/appointment.entity.js';
 import { User } from '../../user.entity.js';
-import { MedicalInsurance } from '../../../medicalInsurance/medicalInsurance.entity.js';
+import { MedicalInsurance } from '../../../medicalInsurance/medicalinsurance.entity.js';
 
 @Entity()
 export class Patient extends User {
-  @Property({nullable: true})
+  @Property({ nullable: true })
   public insuranceNumber?: string | null;
 
   @ManyToOne(() => MedicalInsurance, { nullable: true })
@@ -13,5 +13,4 @@ export class Patient extends User {
 
   @OneToMany(() => Appointment, (appointment) => appointment.patient, { cascade: [Cascade.ALL] })
   public appointments? = new Collection<Appointment>(this);
-
 }

@@ -1,11 +1,11 @@
 import { Collection, Entity, ManyToMany, ManyToOne, Cascade, Property, Rel, PrimaryKey } from '@mikro-orm/core';
 import { MedicalSpecialty } from '../medicalSpecialty/medicalSpecialty.entity.js';
-import { MedicalInsurance } from '../medicalInsurance/medicalInsurance.entity.js';
+import { MedicalInsurance } from '../medicalInsurance/medicalinsurance.entity.js';
 import { Appointment } from '../appointment/appointment.entity.js';
 import { nanoid } from 'nanoid';
 
 @Entity()
-export class Practice{
+export class Practice {
   @PrimaryKey()
   id: string = Date.now() + nanoid(14);
 
@@ -22,17 +22,16 @@ export class Practice{
     cascade: [Cascade.ALL],
     owner: true
   })
-  medicalInsurances ?= new Collection<MedicalInsurance>(this);
+  medicalInsurances? = new Collection<MedicalInsurance>(this);
 
   @ManyToMany(() => Appointment, (appointment) => appointment.practices)
-  appointments ?= new Collection<Appointment>(this);
+  appointments? = new Collection<Appointment>(this);
 
-  constructor(name: string, medicalSpecialty: Rel<MedicalSpecialty>, description: string) 
-  {
+  constructor(name: string, medicalSpecialty: Rel<MedicalSpecialty>, description: string) {
     this.name = name;
     this.description = description;
     this.medicalSpecialty = medicalSpecialty;
     this.medicalInsurances = new Collection<MedicalInsurance>(this);
-    this.appointments = new Collection<Appointment>(this) ;
+    this.appointments = new Collection<Appointment>(this);
   }
 }

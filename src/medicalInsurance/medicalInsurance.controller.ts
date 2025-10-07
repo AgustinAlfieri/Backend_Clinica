@@ -1,6 +1,6 @@
 import { orm } from '../shared/database/orm.js';
 import { NextFunction, Request, Response } from 'express';
-import { MedicalInsurance } from './medicalInsurance.entity.js';
+import { MedicalInsurance } from './medicalinsurance.entity.js';
 import { AppError } from '../shared/errorManagment/appError.js';
 import { StatusCodes } from 'http-status-codes';
 
@@ -20,7 +20,7 @@ function sanitizeInputMedicalInsurance(req: Request, res: Response, next: NextFu
   next();
 }
 
-async function findAll(req: Request, res: Response) { 
+async function findAll(req: Request, res: Response) {
   const medicalInsurances = await em.find(MedicalInsurance, {}, { populate: ['coveredPractices', 'clients'] });
 
   if (!medicalInsurances) throw new AppError('Obras Sociales no encontradas', StatusCodes.NOT_FOUND);
@@ -41,12 +41,11 @@ async function findOne(req: Request, res: Response) {
 
 async function update(req: Request, res: Response) {
   const id = req.params.id;
-  const medicalInsurance = await em.findOneOrFail(MedicalInsurance, id, {populate: ['coveredPractices', 'clients']});
+  const medicalInsurance = await em.findOneOrFail(MedicalInsurance, id, { populate: ['coveredPractices', 'clients'] });
 
   const medicalInsuranceUpdated = em.assign(medicalInsurance, req.body.sanitizedInput);
 
-  if (!medicalInsuranceUpdated)
-    throw new AppError('Error al modificar la obra social', StatusCodes.NOT_MODIFIED);
+  if (!medicalInsuranceUpdated) throw new AppError('Error al modificar la obra social', StatusCodes.NOT_MODIFIED);
 
   await em.flush();
 
