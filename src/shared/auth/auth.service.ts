@@ -4,7 +4,7 @@ import jwt from 'jsonwebtoken';
 import { Administrative } from '../../user/userTypes/administrative/administrative.entity.js';
 import { Medic } from '../../user/userTypes/medic/medic.entity.js';
 import { Patient } from '../../user/userTypes/patient/patient.entity.js';
-import { MedicalInsurance } from '../../medicalInsurance/medicalInsurance.entity.js';
+import { MedicalInsurance } from '../../medicalInsurance/medicalinsurance.entity.js';
 import { Collection } from '@mikro-orm/mysql';
 import { MedicalSpecialty } from '../../medicalSpecialty/medicalSpecialty.entity.js';
 import { Appointment } from '../../appointment/appointment.entity.js';

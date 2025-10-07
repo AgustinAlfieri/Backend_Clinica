@@ -1,6 +1,6 @@
 import { Collection, Entity, ManyToMany, ManyToOne, Cascade, Property, Rel, PrimaryKey } from '@mikro-orm/core';
 import { MedicalSpecialty } from '../medicalSpecialty/medicalSpecialty.entity.js';
-import { MedicalInsurance } from '../medicalInsurance/medicalInsurance.entity.js';
+import { MedicalInsurance } from '../medicalInsurance/medicalinsurance.entity.js';
 import { Appointment } from '../appointment/appointment.entity.js';
 import { nanoid } from 'nanoid';
 

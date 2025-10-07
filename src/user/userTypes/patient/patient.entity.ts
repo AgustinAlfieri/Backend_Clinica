@@ -1,7 +1,7 @@
 import { Entity, ManyToOne, Rel, OneToMany, Cascade, Collection, Property } from '@mikro-orm/core';
 import { Appointment } from '../../../appointment/appointment.entity.js';
 import { User } from '../../user.entity.js';
-import { MedicalInsurance } from '../../../medicalInsurance/medicalInsurance.entity.js';
+import { MedicalInsurance } from '../../../medicalInsurance/medicalinsurance.entity.js';
 
 @Entity()
 export class Patient extends User {
