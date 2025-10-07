@@ -8,7 +8,7 @@ import { errorHandler } from './shared/middlewares/errorHandler.js';
 const app = express();
 app.use(express.json());
 
-const allowedOrigins = ['http://localhost:5173', 'https://frontend-clinica-seven.vercel.app'];
+const allowedOrigins = ['http://localhost:5173', 'https://frontend-clinica-seven.vercel.app' ,'https://frontend-clinica-prod.vercel.app'];
 
 app.use(
   cors({
