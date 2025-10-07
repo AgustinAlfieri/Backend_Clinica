@@ -5,7 +5,7 @@ import { MedicalInsurance } from '../../../medicalInsurance/medicalInsurance.ent
 
 @Entity()
 export class Patient extends User {
-  @Property({nullable: true})
+  @Property({ nullable: true })
   public insuranceNumber?: string | null;
 
   @ManyToOne(() => MedicalInsurance, { nullable: true })
@@ -13,5 +13,4 @@ export class Patient extends User {
 
   @OneToMany(() => Appointment, (appointment) => appointment.patient, { cascade: [Cascade.ALL] })
   public appointments? = new Collection<Appointment>(this);
-
 }

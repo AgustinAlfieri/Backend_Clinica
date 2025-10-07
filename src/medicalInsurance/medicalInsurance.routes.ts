@@ -1,6 +1,12 @@
-import { Router } from "express";
-import {sanitizeInputMedicalInsurance, findAll, findOne,create,update,remove} from "./medicalInsurance.controller.js";
-
+import { Router } from 'express';
+import {
+  sanitizeInputMedicalInsurance,
+  findAll,
+  findOne,
+  create,
+  update,
+  remove
+} from './medicalInsurance.controller.js';
 
 export const medicalInsuranceRouter = Router();
 

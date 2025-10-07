@@ -19,15 +19,19 @@ export class AppointmentService {
 
   async findAll() {
     const _em = this.em.fork();
-    return await _em.find(Appointment, {}, { 
-      populate: ['patient', 'medic', 'practices', 'administratives', 'statusList'] 
-    });
+    return await _em.find(
+      Appointment,
+      {},
+      {
+        populate: ['patient', 'medic', 'practices', 'administratives', 'statusList']
+      }
+    );
   }
 
   async findOne(id: string) {
     const _em = this.em.fork();
-    return await _em.findOne(Appointment, id, { 
-      populate: ['patient', 'medic', 'practices', 'administratives', 'statusList'] 
+    return await _em.findOne(Appointment, id, {
+      populate: ['patient', 'medic', 'practices', 'administratives', 'statusList']
     });
   }
 
