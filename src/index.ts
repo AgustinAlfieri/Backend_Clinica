@@ -8,13 +8,20 @@ import { errorHandler } from './shared/middlewares/errorHandler.js';
 const app = express();
 app.use(express.json());
 
-// 👉 CORS primero (antes que MikroORM y rutas)
+const allowedOrigins = ['http://localhost:5173', 'https://frontend-clinica-seven.vercel.app'];
+
 app.use(
   cors({
-    origin: '', // frontend de Vite
+    origin: (origin, callback) => {
+      if (!origin || allowedOrigins.includes(origin)) {
+        callback(null, true);
+      } else {
+        callback(new Error('Not allowed by CORS'));
+      }
+    },
     methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
     allowedHeaders: ['Content-Type', 'Authorization'],
-    credentials: true // si vas a mandar cookies/sesiones
+    credentials: true
   })
 );
 
