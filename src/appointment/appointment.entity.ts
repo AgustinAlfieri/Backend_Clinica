@@ -14,7 +14,7 @@ import { AppointmentStatus } from '../appointmentStatus/appointmentStatus.entity
 import { Patient } from '../user/userTypes/patient/patient.entity.js';
 import { Medic } from '../user/userTypes/medic/medic.entity.js';
 import { Administrative } from '../user/userTypes/administrative/administrative.entity.js';
-import { Practice } from '../practice/practice.entity.js';
+import { Practice } from '../Practice/practice.entity.js';
 import { nanoid } from 'nanoid';
 
 @Entity()
@@ -46,9 +46,14 @@ export class Appointment {
   })
   practices = new Collection<Practice>(this);
 
-  constructor(appointmentDate: Date, statusList: Collection<AppointmentStatus>, patient: Rel<Patient>,
-              medic: Rel<Medic>, administratives: Collection<Administrative>, practices: Collection<Practice>)
-  {
+  constructor(
+    appointmentDate: Date,
+    statusList: Collection<AppointmentStatus>,
+    patient: Rel<Patient>,
+    medic: Rel<Medic>,
+    administratives: Collection<Administrative>,
+    practices: Collection<Practice>
+  ) {
     this.appointmentDate = appointmentDate;
     this.statusList = statusList;
     this.patient = patient;
