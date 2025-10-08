@@ -46,9 +46,14 @@ export class Appointment {
   })
   practices = new Collection<Practice>(this);
 
-  constructor(appointmentDate: Date, statusList: Collection<AppointmentStatus>, patient: Rel<Patient>,
-              medic: Rel<Medic>, administratives: Collection<Administrative>, practices: Collection<Practice>)
-  {
+  constructor(
+    appointmentDate: Date,
+    statusList: Collection<AppointmentStatus>,
+    patient: Rel<Patient>,
+    medic: Rel<Medic>,
+    administratives: Collection<Administrative>,
+    practices: Collection<Practice>
+  ) {
     this.appointmentDate = appointmentDate;
     this.statusList = statusList;
     this.patient = patient;

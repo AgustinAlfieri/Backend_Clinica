@@ -95,8 +95,7 @@ export const login = async (credentials: userCredentials): Promise<AuthResponse>
 
   //Busco el rol del usuario a loguear
   let result = await customFinder({ dni: dni, email: email });
-  if (result)  role = result;
-
+  if (result) role = result;
 
   if (!email && !dni) {
     throw new Error('Email o DNI son requeridos');
@@ -158,25 +157,26 @@ export const register = async (dataNewUser: DataNewUser): Promise<AuthResponse> 
 
   const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 
-  if (!emailRegex.test(dataNewUser.email)) { //TODO: manejar en el front
+  if (!emailRegex.test(dataNewUser.email)) {
+    //TODO: manejar en el front
     throw new Error('Email inválido');
   }
 
-  console.log("Hasta acá llego 1")
+  console.log('Hasta acá llego 1');
 
   if (dataNewUser.password.length < 8) {
     throw new Error('La contraseña debe tener al menos 8 caracteres');
   }
 
   let newUserId: string;
-  console.log("Hasta acá llego 2");
+  console.log('Hasta acá llego 2');
 
   switch (dataNewUser.role) {
     case 'Patient':
       const pService = new PatientService(em);
       const newPatient = await pService.create(dataNewUser);
       newUserId = newPatient.id;
-      console.log("Hasta acá llego 3");
+      console.log('Hasta acá llego 3');
       break;
     case 'Medic':
       const mService = new MedicService(em);
