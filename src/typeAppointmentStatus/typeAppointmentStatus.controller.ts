@@ -1,42 +1,50 @@
 import { orm } from "../shared/database/orm.js";
 import { Request, Response} from "express";
-import { TypeAppointmentStatus } from "./typeAppointmentStatus.entity.js";
 import { TypeAppointmentStatusService } from "./typeAppointmentStatus.service.js";
 import { StatusCodes } from "http-status-codes";
+import { ResponseManager } from "../shared/helpers/responseHelper.js";
+import { logger } from "../shared/logger/logger.js";
+import { resolveMessage } from "../shared/errorManagment/appError.js";
 
 const em = orm.em.fork();
 
 async function findAll(req: Request, res: Response) {
     try {
         const typeAppointmentStatusService =  new TypeAppointmentStatusService(em);
-
         const typeAppointmentStatus = await typeAppointmentStatusService.findAll();
-        res.status(200).send(typeAppointmentStatus);
+
+        if(!typeAppointmentStatus){
+            ResponseManager.notFound(res, 'No se encontraron Tipos de estado de turnos');
+            return;
+        }
+
+        ResponseManager.success(res, typeAppointmentStatus, 'Tipos de estado de turnos encontrados', StatusCodes.ACCEPTED);
     } catch (error){
-        res.status(StatusCodes.INTERNAL_SERVER_ERROR).send({
-            message: 'Error finding typeAppointmentStatus',
-            error: error instanceof Error ? error.message : error
-        })
+        logger.error('Error en busqueda de typeAppointmentStatus');
+
+        const errorMessage = resolveMessage(error);
+        ResponseManager.error(res, 'Error en busqueda de tipo de estado de turno', errorMessage, StatusCodes.INTERNAL_SERVER_ERROR);
     }
 }
 
 async function findOne(req: Request, res: Response) {
     try {
-        const id = req.params.id; // Get the id from the request params
+        const id = req.params.id;
+
         const typeAppointmentStatusService =  new TypeAppointmentStatusService(em);
         const typeAppointmentStatus = await typeAppointmentStatusService.findOne(id);
         
         if (!typeAppointmentStatus){
-            res.status(StatusCodes.NOT_FOUND).send({message: 'typeAppointmentStatus not found'});
+            ResponseManager.notFound(res, 'Tipo de estado de turno no encontrado');
             return;
         }
-        
-        res.status(StatusCodes.ACCEPTED).send(typeAppointmentStatus);
+
+        ResponseManager.success(res, typeAppointmentStatus, 'Tipo de estado de turno encontrado', StatusCodes.ACCEPTED);
     }catch (error){
-        res.status(StatusCodes.INTERNAL_SERVER_ERROR)
-        .send({message : 'Error en busqueda de typeAppointmentStatus',
-            error: error instanceof Error ? error.message : error
-        })
+        logger.error('Error en busqueda de typeAppointmentStatus');
+
+        const errorMessage = resolveMessage(error);
+        ResponseManager.error(res, 'Error en busqueda de tipo de estado de turno', errorMessage, StatusCodes.INTERNAL_SERVER_ERROR);
     }
 }
 
@@ -45,61 +53,60 @@ async function create(req: Request, res: Response){
         const typeAppointmentStatusService =  new TypeAppointmentStatusService(em);
         const newTypeAppointmentStatus = await typeAppointmentStatusService.create(req.body);
 
-        if (newTypeAppointmentStatus) {
-            res.status(StatusCodes.CREATED).send(newTypeAppointmentStatus);
-        } else {
-            res.status(StatusCodes.BAD_REQUEST).send({message: 'Error creating typeAppointmentStatus'});
+        if(!newTypeAppointmentStatus){
+            ResponseManager.badRequest(res, 'No se pudo crear el Tipo de estado de turno');
+            return;
         }
 
+        ResponseManager.success(res, newTypeAppointmentStatus, 'Tipo de estado de turno creado', StatusCodes.CREATED);
     }catch (error){
-        res.status(StatusCodes.INTERNAL_SERVER_ERROR)
-        .send({message : 'Error creating typeAppointmentStatus',
-            error: error instanceof Error ? error.message : error
-        })
+        logger.error('Error creando typeAppointmentStatus');
+
+        const errorMessage = resolveMessage(error);
+        ResponseManager.error(res, 'Error creando tipo de estado de turno', errorMessage, StatusCodes.INTERNAL_SERVER_ERROR);
     }
 }
 
 async function update(req: Request, res: Response){
     try{
         const id : string = req.params.id;
+
         const typeAppointmentStatusService =  new TypeAppointmentStatusService(em);
         const updatedTypeAppointmentStatus = await typeAppointmentStatusService.update(id, req.body);
 
-        if (updatedTypeAppointmentStatus) {
-            res.status(200).send({message: 'typeAppointmentStatus updated', data: updatedTypeAppointmentStatus})
-        }else{
-            res.status(404).send({message: 'typeAppointmentStatus not found'})
+        if (!updatedTypeAppointmentStatus) {
+            ResponseManager.badRequest(res, 'Error al actualizar el Tipo de estado de turno');
+            return;
         }
+
+        ResponseManager.success(res, updatedTypeAppointmentStatus, 'Tipo de estado de turno actualizado', StatusCodes.OK);
     }catch (error){
-        res.status(StatusCodes.INTERNAL_SERVER_ERROR)
-        .send({message : 'Error updating typeAppointmentStatus',
-            error: process.env.NODE_ENV === 'development' ? error : undefined //this line shows error only in development mode (useful for debugging)
-        })
+        logger.error('Error actualizando typeAppointmentStatus');
+
+        const errorMessage = resolveMessage(error);
+        ResponseManager.error(res, 'Error actualizando tipo de estado de turno', errorMessage, StatusCodes.INTERNAL_SERVER_ERROR);
     }
 }
 
 async function remove(req: Request, res: Response){
     try{
-        const id : string = req.params.id; // Get the id from the request params
+        const id : string = req.params.id;
+
         const typeAppointmentStatusService =  new TypeAppointmentStatusService(em);
         const result = await typeAppointmentStatusService.remove(id);
 
-        if (result) {
-            res.status(StatusCodes.OK).send({message: 'typeAppointmentStatus removed'});
-            return;
-        } else {
-            res.status(StatusCodes.NOT_FOUND).send({message: 'typeAppointmentStatus not found'});
+        if(!result){
+            ResponseManager.badRequest(res, 'No se pudo eliminar el Tipo de estado de turno');
             return;
         }
 
-    }catch (error){
-       res.status(StatusCodes.INTERNAL_SERVER_ERROR)
-        .send({
-            message : 'Error removing typeAppointmentStatus',
-            error: error instanceof Error ? error.message : error
-        })
+        ResponseManager.success(res, null, 'Tipo de estado de turno eliminado', StatusCodes.OK);
+    } catch (error){
+       logger.error('Error eliminando typeAppointmentStatus');
+
+       const errorMessage = resolveMessage(error);
+       ResponseManager.error(res, 'Error eliminando tipo de estado de turno', errorMessage, StatusCodes.INTERNAL_SERVER_ERROR);
     }
 }
 
 export {findAll, findOne, create, update, remove }
-// export {findAll, findOne, create, update, remove} from "./typeAppointmentStatus.controller.js";

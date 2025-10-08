@@ -22,14 +22,12 @@ export class PatientService {
     const _em = this.em.fork();
     const existPatient = await _em.findOne(Patient, { dni: patient.dni });
     const newPatient = new Patient();
-    console.log("Insurance number: ", patient.insuranceNumber);
 
     //important!!!
     if (existPatient) {
       throw new Error('Ya existe un paciente con ese DNI');
     }
 
-    console.log(patient);
     if(!patient.password || !patient.email || !patient.dni || !patient.name) {
         throw new Error('Todos los campos son obligatorios');
     }
@@ -70,7 +68,7 @@ export class PatientService {
         const patient = await _em.findOneOrFail(Patient, id);
         const newPatientData = new Patient();
 
-        //very important!!!!!!!"!"!"
+        //very important!
         newPatientData.id = id;
 
         if(!patient){
@@ -123,7 +121,9 @@ export class PatientService {
     try{
         const _em = this.em.fork();
         const patient = await _em.findOneOrFail(Patient, id);
+        
         await _em.removeAndFlush(patient);
+        return true;
     } catch (error) {
         logger.error("Error al eliminar paciente", error);  
         return false;

@@ -20,7 +20,7 @@ function sanitizeInputAS(req: Request, res: Response, next: NextFunction) {
     }
   });
   next();
-} // / Middleware to sanitize input, removing undefined values
+}
 
 async function findAll(req: Request, res: Response) {
   const appointmentStatus = await em.find(

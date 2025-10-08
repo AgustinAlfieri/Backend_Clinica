@@ -7,8 +7,7 @@ export enum actions {
     CREATE = 'create',
     DELETE = 'delete',
     UPDATE = 'update',
-    VIEW = 'view',
-    VIEW_OWN_APPOINTMENTS = 'viewOwnAppointments'
+    VIEW = 'view'
 };
 
 export const rolesPermissions: Record<string, Record<string, string[]>> = 
@@ -29,15 +28,15 @@ export const rolesPermissions: Record<string, Record<string, string[]>> =
 
     'Patient' : {
         User: [actions.VIEW],
-        Patient: [actions.UPDATE, actions.VIEW_OWN_APPOINTMENTS],
+        Patient: [actions.UPDATE],
         Medic: [actions.VIEW]
     },
 
     //User with all permissions
     'Administrator' : {
         User: [actions.CREATE, actions.DELETE, actions.UPDATE, actions.VIEW],
-        Patient: [actions.CREATE, actions.DELETE, actions.UPDATE, actions.VIEW, actions.VIEW_OWN_APPOINTMENTS],
-        Medic: [actions.CREATE, actions.DELETE, actions.UPDATE, actions.VIEW, actions.VIEW_OWN_APPOINTMENTS]
+        Patient: [actions.CREATE, actions.DELETE, actions.UPDATE, actions.VIEW],
+        Medic: [actions.CREATE, actions.DELETE, actions.UPDATE, actions.VIEW]
     }
 };
 
