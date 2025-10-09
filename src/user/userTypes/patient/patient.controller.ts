@@ -55,14 +55,9 @@ async function update(req: Request, res: Response) {
     const id: string = req.params.id;
 
     const patientService = new PatientService(em);
-    const patient = await patientService.update(id, req.body);
+    await patientService.update(id, req.body);
 
-    if (patient) {
-      ResponseManager.success(res, patient, 'Paciente modificado correctamente', StatusCodes.OK);
-      return;
-    }
-
-    ResponseManager.badRequest(res, 'Paciente no encontrado');
+    ResponseManager.success(res, null, 'Paciente modificado correctamente', StatusCodes.OK);
   } catch (error) {
     logger.error('Error al modificar paciente:', error);
 

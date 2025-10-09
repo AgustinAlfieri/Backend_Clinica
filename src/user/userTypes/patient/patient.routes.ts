@@ -7,7 +7,7 @@ import { patientSchema } from "../../../shared/schemas/userSchemas.js";
 export const patientRouter = Router();
 
 patientRouter.get('/findAll', authMiddleware, validateAfterAuth({ location: 'body', schema: patientSchema }), findAll);
-patientRouter.get('/findOne/:id', authMiddleware, validateAfterAuth({ location: 'body', schema: patientSchema }), findOne);
+patientRouter.get('/findOne/:id', findOne, authMiddleware, validateAfterAuth({ location: 'body', schema: patientSchema }), findOne);
 patientRouter.post('/create', authMiddleware, validateAfterAuth({ location: 'body', schema: patientSchema }), create);
-patientRouter.post('/update/:id', authMiddleware, validateAfterAuth({ location: 'body', schema: patientSchema }), update);
+patientRouter.post('/update/:id',update, authMiddleware, validateAfterAuth({ location: 'body', schema: patientSchema }), update);
 patientRouter.delete('/remove/:id', authMiddleware, validateAfterAuth({ location: 'body', schema: patientSchema }), remove);
