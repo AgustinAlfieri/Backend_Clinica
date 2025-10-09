@@ -1,6 +1,5 @@
 import { orm } from '../../../shared/database/orm.js';
 import { Request, Response } from 'express';
-import { AppError } from '../../../shared/errorManagment/appError.js';
 import { StatusCodes } from 'http-status-codes';
 import { logger } from '../../../shared/logger/logger.js';
 import { MedicService } from './medic.service.js';
@@ -14,13 +13,13 @@ async function findAll(req: Request, res: Response) {
     const medicService = new MedicService(em);
     const medics = await medicService.findAll();
 
-    if(!medics){
+    if (!medics) {
       ResponseManager.notFound(res, 'No se encontraron medicos');
       return;
     }
 
     ResponseManager.success(res, medics, 'Medicos encontrados', StatusCodes.ACCEPTED);
-  } catch(error) {
+  } catch (error) {
     logger.error('Error en busqueda de medicos:', error);
 
     const errorMessage = resolveMessage(error);
@@ -35,7 +34,7 @@ async function findOne(req: Request, res: Response) {
     const medicService = new MedicService(em);
     const medic = await medicService.findOne(id);
 
-    if(!medic){
+    if (!medic) {
       ResponseManager.notFound(res, 'Medico no encontrado');
       return;
     }
@@ -54,7 +53,7 @@ async function create(req: Request, res: Response) {
     const medicService = new MedicService(em);
     const medicCreated = await medicService.create(req.body);
 
-    if(!medicCreated){
+    if (!medicCreated) {
       ResponseManager.badRequest(res, 'No se pudo crear el medico');
       return;
     }
@@ -73,14 +72,9 @@ async function update(req: Request, res: Response) {
     const id = req.params.id;
 
     const medicService = new MedicService(em);
-    const medicUpdated = await medicService.update(id, req.body);
+    await medicService.update(id, req.body);
 
-    if(!medicUpdated){
-      ResponseManager.badRequest(res, 'No se pudo modificar el medico');
-      return;
-    }
-
-    ResponseManager.success(res, medicUpdated, 'Medico modificado', StatusCodes.OK);
+    ResponseManager.success(res, null, 'Medico modificado', StatusCodes.OK);
   } catch (error) {
     logger.error('Error al modificar medico:', error);
 
@@ -94,20 +88,16 @@ async function remove(req: Request, res: Response) {
     const id = req.params.id;
 
     const medicService = new MedicService(em);
-    const result = await medicService.remove(id);
+    await medicService.remove(id);
 
-    if(!result){
-      ResponseManager.error(res, 'No se pudo eliminar el medico');
-      return;
-    }
-
-    ResponseManager.success(res, { message: 'Medico eliminado' }, 'Medico eliminado', StatusCodes.OK);
+    ResponseManager.success(res, null, 'Medico eliminado', StatusCodes.OK);
   } catch (error) {
     logger.error('Error al eliminar medico:', error);
 
     const errorMessage = resolveMessage(error);
     ResponseManager.error(res, 'Error al eliminar el medico', errorMessage, StatusCodes.INTERNAL_SERVER_ERROR);
   }
+  return;
 }
 
 export { findAll, findOne, update, create, remove };

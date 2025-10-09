@@ -21,129 +21,80 @@ export class MedicService {
   }
 
   async create(medic: DataNewUser): Promise<Medic> {
-    const _em = this.em.fork();
-    const newMedic = new Medic();
-
-    const existMedicByDni = await _em.findOne(Medic, { dni: medic.dni });
-    if (existMedicByDni) throw new Error('Ya existe un médico con ese DNI');
-
-    const existMedicByLicense = await _em.findOne(Medic, { license: medic.license });
-    if (existMedicByLicense) throw new Error('Ya existe un médico con esa licencia');
-
-    if (!medic.password || !medic.email || !medic.dni || !medic.name || !medic.license)
-      throw new Error('Todos los campos son obligatorios');
-
-    //No plain text password
-    newMedic.password = await hashPassword(medic.password);
-
-    //Assign fields
-    newMedic.dni = medic.dni;
-    newMedic.name = medic.name;
-    newMedic.email = medic.email;
-    newMedic.license = medic.license;
-
-    medic.telephone ? (newMedic.telephone = medic.telephone) : (newMedic.telephone = undefined);
-
-    newMedic.medicalSpecialty = new Collection<MedicalSpecialty>(newMedic);
-
-    if (!(medic.medicalSpecialty === null)) {
-      for (const id of medic.medicalSpecialty) {
-        const specialty = await _em.findOne(MedicalSpecialty, id || '-1');
-
-        if (!specialty) throw new Error('No se encontró la especialidad médica');
-
-        newMedic.medicalSpecialty.add(specialty);
-      }
-    }
-
-    newMedic.role = Role.MEDIC;
-
-    _em.persistAndFlush(newMedic);
-    return newMedic;
-  }
-
-  async update(id: string, medicUpdate: Partial<DataNewUser>): Promise<Medic | null> {
     try {
       const _em = this.em.fork();
-      const medic = await _em.findOneOrFail(Medic, id, { populate: ['medicalSpecialty', 'appointments'] });
-      const newMedicData = new Medic();
+      // Creo el médico
+      const newMedic = await _em.create(Medic, {
+        dni: medic.dni,
+        name: medic.name,
+        email: medic.email,
+        password: await hashPassword(medic.password),
+        telephone: medic.telephone,
+        license: medic.license,
+        role: Role.MEDIC
+      });
 
-      newMedicData.id = id;
+      // Validaciones básicas
+      if (!newMedic.dni && !medic.email) throw new Error('Debe ingresar dni o email');
 
-      if (!medic) {
-        throw new Error('No se encontró el médico');
-      }
+      if (!newMedic.name || !newMedic.password || !newMedic.license) throw new Error('Faltan datos obligatorios');
 
-      //validate if password has changed
-      if(!medicUpdate.password){
-          newMedicData.password = medic.password;
-      }
-      else {
-          const noChangePassword : boolean = await comparePassword(medicUpdate.password, medic.password);
-
-            if(noChangePassword)
-                newMedicData.password = medic.password;
-            else
-                newMedicData.password = await hashPassword(medicUpdate.password);
-        }
-
-      newMedicData.dni = medicUpdate.dni || medic.dni;
-      newMedicData.name = medicUpdate.name || medic.name;
-      newMedicData.email = medicUpdate.email || medic.email;
-      newMedicData.telephone = medicUpdate.telephone || medic.telephone;
-
-      //MedicalSpecialty
-      if (!medicUpdate.medicalSpecialty) {
-        newMedicData.medicalSpecialty = new Collection<MedicalSpecialty>(newMedicData);
-        newMedicData.medicalSpecialty = medic.medicalSpecialty;
-      } else {
-        newMedicData.medicalSpecialty = new Collection<MedicalSpecialty>(newMedicData);
-        for (const ms of medicUpdate.medicalSpecialty) {
-          const specialty = await _em.findOne(MedicalSpecialty, ms);
-
-          if (!specialty) throw new Error('No se encontró la especialidad médica');
-
-          newMedicData.medicalSpecialty.add(specialty);
+      // Si viene con especialidades, las busco y asigno
+      if (medic.medicalSpecialty && medic.medicalSpecialty.length > 0) {
+        for (const specialtyId of medic.medicalSpecialty) {
+          const specialty = await _em.findOne(MedicalSpecialty, specialtyId);
+          if (!specialty) {
+            throw new Error(`La especialidad con id ${specialtyId} no existe`);
+          }
+          newMedic.medicalSpecialty.add(specialty);
         }
       }
 
-      newMedicData.license = medicUpdate.license || medic.license;
-      newMedicData.role = Role.MEDIC;
+      // Si viene con turnos, los busco y asigno
+      if (medic.appointments) {
+        for (const appointmentId of medic.appointments) {
+          const appointment = await _em.findOne(Appointment, appointmentId);
 
-      //Appointments
-      if (!medicUpdate.appointments) {
-        newMedicData.appointments = medic.appointments;
-      } else {
-        newMedicData.appointments = new Collection<Appointment>(newMedicData);
-        for (const app of medicUpdate.appointments) {
-          const appointment = await _em.findOne(Appointment, app);
-
-          if (!appointment) throw new Error('No se encontró la cita médica');
-
-          newMedicData.appointments.add(appointment);
+          if (!appointment) throw new Error(`El turno con id ${appointmentId} no existe`);
+          else newMedic.appointments.add(appointment);
         }
       }
+      _em.persistAndFlush(newMedic);
+      return newMedic;
+    } catch (error: any) {
+      logger.error('Error al crear el medico', error);
 
-      _em.assign(medic, newMedicData);
-      await _em.flush();
-
-      return newMedicData;
-    } catch (error) {
-      logger.error('Error al modificar médico:', error);
-      throw new Error('Error al modificar médico');
+      throw `Fallo al crear el medico: ${error.message || error.toString()}`;
     }
   }
 
-  async remove(id: string): Promise<boolean> {
+  async update(id: string, medicUpdate: Partial<DataNewUser>): Promise<void> {
+    try {
+      const _em = this.em.fork();
+
+      // Si quiere actualizar la password, la hasheo
+      if (medicUpdate.password) {
+        medicUpdate.password = await hashPassword(medicUpdate.password);
+      }
+      const result = await _em.nativeUpdate(Medic, { id }, medicUpdate);
+
+      //No encontro ningun paciente con ese id
+    } catch (error: any) {
+      logger.error('Error al actualizar medico', error);
+
+      throw `Fallo al actualizar medico: ${error.message || error.toString()}`;
+    }
+  }
+
+  async remove(id: string) {
     try {
       const _em = this.em.fork();
       const medic = await _em.findOneOrFail(Medic, id);
-      _em.remove(medic);
-      await _em.flush();
-      return true;
-    } catch (error) {
-      logger.error('Error al eliminar médico:', error);
-      return false;
+
+      await _em.removeAndFlush(medic);
+    } catch (error: any) {
+      logger.error('Error al eliminar médico', error);
+      throw `Error al eliminar médico: ${error.message || error.toString()}`;
     }
   }
 }
