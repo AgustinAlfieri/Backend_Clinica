@@ -43,6 +43,13 @@ const license = Joi.string().alphanum().min(5).max(20).messages({
   'string.max': 'La licencia no debe exceder los 20 caracteres'
 });
 
+const description = Joi.string().min(3).max(100).messages({
+  'string.base': 'El nombre debe ser una cadena de texto',
+  'string.empty': 'El nombre es un campo obligatorio',
+  'string.min': 'El nombre debe tener al menos 3 caracteres',
+  'string.max': 'El nombre no debe exceder los 50 caracteres'
+});
+
 const insuranceNumber = Joi.string().alphanum().min(5).max(20);
 
 const medicalInsurance = Joi.string().uuid();
@@ -50,6 +57,8 @@ const medicalInsurance = Joi.string().uuid();
 const medicalSpecialty = Joi.array().items(Joi.string());
 
 const appointments = Joi.array().items(Joi.string());
+
+const medicalInsurances = Joi.array().items(Joi.string());
 
 export const patientSchema = Joi.object({
   dni,
@@ -79,5 +88,13 @@ export const medicSchema = Joi.object({
   telephone,
   license,
   medicalSpecialty,
+  appointments
+});
+
+export const practiceSchema = Joi.object({
+  name,
+  description,
+  medicalSpecialty,
+  medicalInsurances,
   appointments
 });

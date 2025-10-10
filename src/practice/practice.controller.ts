@@ -28,7 +28,7 @@ async function findAll(req: Request, res: Response) {
 }
 
 async function findOne(req: Request, res: Response) {
-  try{
+  try {
     const id = req.params.id;
 
     const practiceService = new PracticeService(em);
@@ -37,7 +37,7 @@ async function findOne(req: Request, res: Response) {
     if (!practice) {
       ResponseManager.notFound(res, 'No se encontró la practica');
       return;
-    } 
+    }
 
     ResponseManager.success(res, practice, 'Practica encontrada', StatusCodes.OK);
   } catch (error) {
@@ -49,16 +49,11 @@ async function findOne(req: Request, res: Response) {
 }
 
 async function update(req: Request, res: Response) {
-  try{
+  try {
     const id = req.params.id;
 
     const practiceService = new PracticeService(em);
     const updatedPractice = await practiceService.update(id, req.body.sanitizedInput);
-
-    if (!updatedPractice) {
-      ResponseManager.badRequest(res, 'Error al actualizar la practica');
-      return;
-    }
 
     ResponseManager.success(res, updatedPractice, 'Practica actualizada', StatusCodes.OK);
   } catch (error) {
@@ -74,11 +69,6 @@ async function create(req: Request, res: Response) {
     const practiceService = new PracticeService(em);
     const newPractice = await practiceService.create(req.body);
 
-    if (!newPractice) {
-      ResponseManager.badRequest(res, 'Error al crear la practica');
-      return;
-    }
-
     ResponseManager.success(res, newPractice, 'Practica creada', StatusCodes.CREATED);
   } catch (error) {
     logger.error('Error al crear la practica', { error });
@@ -89,17 +79,12 @@ async function create(req: Request, res: Response) {
 }
 
 async function remove(req: Request, res: Response) {
-  try{
+  try {
     const id = req.params.id;
 
     const practiceService = new PracticeService(em);
     const deletedPractice = await practiceService.delete(id);
 
-    if (!deletedPractice) {
-      ResponseManager.badRequest(res, 'Error al eliminar la practica');
-      return;
-    }
-    
     ResponseManager.success(res, deletedPractice, 'Practica eliminada', StatusCodes.OK);
   } catch (error) {
     logger.error('Error al eliminar la practica', { error });
@@ -110,4 +95,3 @@ async function remove(req: Request, res: Response) {
 }
 
 export { findAll, findOne, update, create, remove };
-
