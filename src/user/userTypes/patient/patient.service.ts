@@ -51,6 +51,7 @@ export class PatientService {
         newPatient.medicalInsurance = medicalInsurance;
       }
 
+      // TODO: Revisar si tiene sentido validar los appointments en el create, siendo que para crear turnos el usuario debe existir
       //Si viene con turnos, los busco y asigno
       if (patient.appointments) {
         const appointments = new Collection<Appointment>(newPatient);
@@ -80,8 +81,6 @@ export class PatientService {
       if (patientUpdate.password) patientUpdate.password = await hashPassword(patientUpdate.password);
 
       const result = await _em.nativeUpdate(Patient, { id }, patientUpdate);
-
-      //No encontro ningun paciente con ese id
     } catch (error: any) {
       logger.error('Error al actualizar paciente', error);
 
