@@ -12,17 +12,17 @@ import { ResponseManager } from '../../../shared/helpers/responseHelper.js';
 const em = orm.em.fork();
 
 async function findAll(req: Request, res: Response) {
-  try{
+  try {
     const aService = new AdministrativeService(em);
     const administratives = await aService.findAll();
 
-    if(!administratives) {
+    if (!administratives) {
       ResponseManager.notFound(res, 'No se encontraron administrativos');
       return;
     }
 
     ResponseManager.success(res, administratives, 'Administrativos encontrados', StatusCodes.ACCEPTED);
-  } catch(error){
+  } catch (error) {
     logger.error(error);
 
     const errorMessage = resolveMessage(error);
@@ -31,7 +31,7 @@ async function findAll(req: Request, res: Response) {
 }
 
 async function findOne(req: Request, res: Response) {
-  try{
+  try {
     const id: string = req.params.id;
 
     const aService = new AdministrativeService(em);
@@ -56,7 +56,7 @@ async function create(req: Request, res: Response) {
     const aService = new AdministrativeService(em);
     const administrative = await aService.create(req.body);
 
-    if(!administrative) {
+    if (!administrative) {
       ResponseManager.badRequest(res, 'No se pudo crear el administrativo');
       return;
     }
@@ -77,17 +77,17 @@ async function update(req: Request, res: Response) {
     const aService = new AdministrativeService(em);
     const administrative = await aService.update(id, req.body);
 
-    if(!administrative) {
-      ResponseManager.badRequest(res, 'No se pudo actualizar el administrativo');
-      return;
-    }
-
     ResponseManager.success(res, administrative, 'Administrativo actualizado', StatusCodes.ACCEPTED);
   } catch (error) {
     logger.error(error);
 
     const errorMessage = resolveMessage(error);
-    ResponseManager.error(res, 'Error al actualizar el administrativo', errorMessage, StatusCodes.INTERNAL_SERVER_ERROR);
+    ResponseManager.error(
+      res,
+      'Error al actualizar el administrativo',
+      errorMessage,
+      StatusCodes.INTERNAL_SERVER_ERROR
+    );
   }
 }
 
@@ -98,7 +98,7 @@ async function remove(req: Request, res: Response) {
     const aService = new AdministrativeService(em);
     const administrative = await aService.remove(id);
 
-    if(!administrative) {
+    if (!administrative) {
       ResponseManager.badRequest(res, 'No se pudo eliminar el administrativo');
       return;
     }
