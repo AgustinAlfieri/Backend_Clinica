@@ -22,6 +22,11 @@ export class MedicService {
 
   async create(medic: DataNewUser): Promise<Medic> {
     try {
+      // Validaciones básicas
+      if (!medic.dni || !medic.email) throw new Error('Debe ingresar dni o email');
+
+      if (!medic.name || !medic.password || !medic.license) throw new Error('Faltan datos obligatorios');
+
       const _em = this.em.fork();
       // Creo el médico
       const newMedic = await _em.create(Medic, {
@@ -33,11 +38,6 @@ export class MedicService {
         license: medic.license,
         role: Role.MEDIC
       });
-
-      // Validaciones básicas
-      if (!newMedic.dni && !medic.email) throw new Error('Debe ingresar dni o email');
-
-      if (!newMedic.name || !newMedic.password || !newMedic.license) throw new Error('Faltan datos obligatorios');
 
       // Si viene con especialidades, las busco y asigno
       if (medic.medicalSpecialty && medic.medicalSpecialty.length > 0) {

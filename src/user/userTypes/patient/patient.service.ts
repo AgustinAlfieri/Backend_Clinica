@@ -21,8 +21,12 @@ export class PatientService {
 
   async create(patient: DataNewUser): Promise<Patient> {
     try {
-      const _em = this.em.fork();
+      //Validaciones basicas
+      if (!patient.dni || !patient.email) throw new Error('Debe ingresar dni o email');
 
+      if (!patient.name || !patient.password) throw new Error('Faltan datos obligatorios');
+
+      const _em = this.em.fork();
       //Creo el paciente
       const newPatient = await _em.create(Patient, {
         dni: patient.dni,
@@ -33,11 +37,6 @@ export class PatientService {
         insuranceNumber: patient.insuranceNumber,
         role: Role.PATIENT
       });
-
-      //Validaciones basicas
-      if (!newPatient.dni && !patient.email) throw new Error('Debe ingresar dni o email');
-
-      if (!newPatient.name || !newPatient.password) throw new Error('Faltan datos obligatorios');
 
       //Si viene con obra social, la busco y asigno
       if (patient.medicalInsurance) {

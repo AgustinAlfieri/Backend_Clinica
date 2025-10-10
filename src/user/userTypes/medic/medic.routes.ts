@@ -6,38 +6,8 @@ import { medicSchema } from '../../../shared/schemas/userSchemas.js';
 
 export const routerMedic = Router();
 
-routerMedic.get(
-  '/findAll',
-
-  authMiddleware,
-  validateInput({ location: 'body', schema: medicSchema }),
-  findAll
-);
-routerMedic.get(
-  '/findOne/:id',
-
-  authMiddleware,
-  validateInput({ location: 'params', schema: medicSchema }),
-  findOne
-);
-routerMedic.post(
-  '/update/:id',
-
-  authMiddleware,
-  validateInput({ location: 'body', schema: medicSchema }),
-  update
-);
-routerMedic.post(
-  '/create',
-
-  authMiddleware,
-  validateInput({ location: 'body', schema: medicSchema }),
-  create
-);
-routerMedic.delete(
-  '/remove/:id',
-
-  authMiddleware,
-  validateInput({ location: 'params', schema: medicSchema }),
-  remove
-);
+routerMedic.get('/findAll', authMiddleware, validateInput({ location: 'body', schema: medicSchema }), findAll);
+routerMedic.get('/findOne/:id', authMiddleware, validateInput({ location: 'params', schema: medicSchema }), findOne);
+routerMedic.post('/update/:id', authMiddleware, validateInput({ location: 'body', schema: medicSchema }), update);
+routerMedic.post('/create', authMiddleware, validateInput({ location: 'body', schema: medicSchema }), create);
+routerMedic.delete('/remove/:id', authMiddleware, validateInput({ location: 'params', schema: medicSchema }), remove);
