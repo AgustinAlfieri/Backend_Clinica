@@ -3,27 +3,26 @@ import { Schema, ValidationError } from 'joi';
 import { logger } from '../logger/logger.js';
 import { ResponseManager } from '../helpers/responseHelper.js';
 
-
 interface validateInputProps {
-    location?: 'body' | 'params' | 'query';
-    schema?: Schema;
+  location?: 'body' | 'params' | 'query';
+  schema?: Schema;
 }
 
-export function validateAfterAuth({ location, schema }: validateInputProps) {
-    return (req: Request, res: Response, next: NextFunction) => {
-        try {
-            const dataToValidate = req[location || 'body'];
-            const result = schema?.validateAsync(dataToValidate, { stripUnknown: true  });
+export function validateInput({ location, schema }: validateInputProps) {
+  return (req: Request, res: Response, next: NextFunction) => {
+    try {
+      const dataToValidate = req[location || 'body'];
+      const result = schema?.validateAsync(dataToValidate, { stripUnknown: true });
 
-            req[location || 'body'] = result;
-            next();
-        } catch (err) {
-            logger.error(err);
+      req[location || 'body'] = result;
+      next();
+    } catch (err) {
+      logger.error(err);
 
-            const error = err as ValidationError;
+      const error = err as ValidationError;
 
-            const errors = error.details.map(detail => detail.message);
-            ResponseManager.badRequest(res, errors, 'Error de validación', 400);
-        }
-    };
-};
+      const errors = error.details.map((detail) => detail.message);
+      ResponseManager.badRequest(res, errors, 'Error de validación', 400);
+    }
+  };
+}
