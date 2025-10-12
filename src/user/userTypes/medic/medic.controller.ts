@@ -100,4 +100,22 @@ async function remove(req: Request, res: Response) {
   return;
 }
 
-export { findAll, findOne, update, create, remove };
+async function getMedicSchedule(req: Request, res: Response) {
+  try{
+    const id = req.params.id;
+    const medicService = new MedicService(em);
+    const schedule = await medicService.getMedicSchedule(id);
+
+    if(!schedule){
+      ResponseManager.notFound(res, 'No se encontro el horario del medico');
+      return;
+    }
+    ResponseManager.success(res, schedule, 'Horario del medico encontrado', StatusCodes.ACCEPTED);
+  }catch(error){
+    logger.error('Error en busqueda de horario del medico:', error);
+    const errorMessage = resolveMessage(error);
+    ResponseManager.error(res, 'Error al obtener el horario del medico', errorMessage, StatusCodes.INTERNAL_SERVER_ERROR);
+  }
+}
+
+export { findAll, findOne, update, create, remove, getMedicSchedule };

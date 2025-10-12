@@ -7,6 +7,22 @@ import { comparePassword } from '../../../shared/auth/auth.service.js';
 import { logger } from '../../../shared/logger/logger.js';
 import { Appointment } from '../../../appointment/appointment.entity.js';
 
+interface TimeSlot {
+  datetime: string; // ISO string
+  available: boolean;
+}
+
+interface AvailableSchedule {
+  date: string; // YYYY-MM-DD
+  slots: TimeSlot[];
+}
+
+interface WorkingHours {
+  day: number; // 0 = Domingo, 1 = Lunes, etc.
+  startTime: string; // "09:00"
+  endTime: string; // "17:00"
+}
+
 export class MedicService {
   constructor(private em: EntityManager) {}
 
@@ -97,4 +113,109 @@ export class MedicService {
       throw `Error al eliminar médico: ${error.message || error.toString()}`;
     }
   }
+
+  async getMedicSchedule(id: string, slotDuratioon: number = 30): Promise <AvailableSchedule[]>  { 
+    try {
+      const _em = this.em.fork();
+
+      const medic = await _em.findOne(Medic, id, {
+        populate: ["appointments"],
+      });
+
+      if (!medic) throw new Error("No se encontro el medico");
+
+      // Traigo la fecha de hoy y seteo la hora en 00:00:00
+      const today = new Date();
+      today.setHours(0, 0, 0, 0);
+
+      // Calculo la fecha dentro de dos semanas
+      const twoWeeksLater = new Date(today);
+      twoWeeksLater.setDate(today.getDate() + 14);
+
+      // Busco los turnos del medico en las proximas dos semanas
+      const bookedAppointments = await _em.find(Appointment, {
+        medic: medic.id,
+        appointmentDate: { $gte: today, $lte: twoWeeksLater },
+      });
+
+      // Creo un set con las fechas y horas ya ocupadas para facilitar la busqueda
+      const bookedTimes = new Set(
+        bookedAppointments.map((app) => {
+          const appointmentDate = app.appointmentDate;
+          return appointmentDate.toISOString();
+        })
+      );
+
+      // Defino el horario laboral del medico (esto podria venir de la BD en un caso real)
+      const schedule: AvailableSchedule[] = [];
+
+      // Hardcodeo horario laboral de lunes a viernes de 9 a 17, podriamos modificar la entidad para que cada medico tenga su propio horario
+      const workingHours: WorkingHours[] = [
+        { day: 1, startTime: "09:00", endTime: "17:00" }, // Lunes
+        { day: 2, startTime: "09:00", endTime: "17:00" }, // Martes
+        { day: 3, startTime: "09:00", endTime: "17:00" }, // Miércoles
+        { day: 4, startTime: "09:00", endTime: "17:00" }, // Jueves
+        { day: 5, startTime: "09:00", endTime: "17:00" }, // Viernes
+      ];
+
+      for (let i = 0; i < 14; i++) {
+        // Me traigo la fecha actual en el loop
+        const currentDate = new Date(today);
+        currentDate.setDate(today.getDate() + i);
+
+        const dayOfWeek = currentDate.getDay(); // 0 = Domingo, 1 = Lunes, etc
+
+        const workingDay = workingHours.find((wh) => wh.day === dayOfWeek);
+
+        if (!workingDay) continue; // Si no trabaja ese dia, paso al siguiente
+
+        const dateSString = currentDate.toISOString().split("T")[0]; // YYYY-MM-DD
+        const slots: TimeSlot[] = [];
+
+        // Genero los slots de 30 minutos entre el horario de inicio y fin
+        const [startHour, startMinute] = workingDay.startTime
+          .split(":")
+          .map(Number);
+        const [endHour, endMinute] = workingDay.endTime.split(":").map(Number);
+
+        const currentSlot = new Date(currentDate);
+        currentSlot.setHours(startHour, startMinute, 0, 0); // Me paro en la hora de inicio
+
+        const endTime = new Date(currentDate);
+        endTime.setHours(endHour, endMinute, 0, 0); // Hora de fin
+
+        // Itero creando slots de 30 minutos hasta llegar a la hora de fin
+        while (currentSlot < endTime) {
+          //
+          const slotISO = currentSlot.toISOString();
+
+          // Verifico si el slot esta ocupado
+          const isAvailable = !bookedTimes.has(slotISO);
+
+          slots.push({
+            datetime: slotISO,
+            available: isAvailable,
+          });
+
+          // Avanzo al siguiente slot
+          currentSlot.setMinutes(currentSlot.getMinutes() + slotDuratioon);
+        }
+
+        if (slots.length > 0) {
+          schedule.push({
+            date: dateSString,
+            slots: slots,
+          });
+        }
+
+
+      } 
+      return schedule;
+    } catch (error: any) {
+      logger.error("Error al obtener el horario del medico", error);
+      throw `Fallo al obtener el horario del medico: ${
+        error.message || error.toString()
+      }`;
+    }
+  } 
 }
