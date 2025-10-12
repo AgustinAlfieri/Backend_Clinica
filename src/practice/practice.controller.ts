@@ -53,9 +53,9 @@ async function update(req: Request, res: Response) {
     const id = req.params.id;
 
     const practiceService = new PracticeService(em);
-    const updatedPractice = await practiceService.update(id, req.body.sanitizedInput);
+    await practiceService.update(id, req.body);
 
-    ResponseManager.success(res, updatedPractice, 'Practica actualizada', StatusCodes.OK);
+    ResponseManager.success(res, null, 'Practica actualizada', StatusCodes.OK);
   } catch (error) {
     logger.error('Error al actualizar la practica', { error });
 
