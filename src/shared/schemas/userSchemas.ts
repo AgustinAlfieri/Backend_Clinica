@@ -1,9 +1,4 @@
 import Joi from 'joi';
-import { Role } from '../enums/role.enum.js';
-
-const roles = [Role.ADMINISTRATIVE, Role.MEDIC, Role.PATIENT];
-
-const id = Joi.string().uuid();
 
 const dni = Joi.string()
   .pattern(/^[0-9]{8}[A-Za-z]$/)

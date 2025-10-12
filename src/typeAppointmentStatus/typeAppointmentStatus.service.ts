@@ -1,62 +1,76 @@
-import { EntityManager } from "@mikro-orm/mysql";
-import { TypeAppointmentStatus } from "./typeAppointmentStatus.entity.js";
+import { Collection, EntityManager } from '@mikro-orm/mysql';
+import { TypeAppointmentStatus } from './typeAppointmentStatus.entity.js';
+import { AppointmentStatus } from '../appointmentStatus/appointmentStatus.entity.js';
+import { logger } from '../shared/logger/logger.js';
 
 interface TypeAppointmentStatusDTO {
-    name: string;
+  name: string;
+  appointmentStatus: Collection<AppointmentStatus>;
 }
 
 export class TypeAppointmentStatusService {
-    constructor(private _em: EntityManager) {}
+  constructor(private em: EntityManager) {}
 
-    async findAll() {
-        const _em = this._em.fork();
-        return await _em.find(TypeAppointmentStatus, {}, {populate: ['appointmentStatus']});   
-    }
+  async findAll() {
+    const _em = this.em.fork();
+    return await _em.find(TypeAppointmentStatus, {}, { populate: ['appointmentStatus'] });
+  }
 
-    async findOne(id: string) {
-        const _em = this._em.fork();
-        return await _em.findOne(TypeAppointmentStatus, id, {populate: ['appointmentStatus']});
-    }
+  async findOne(id: string) {
+    const _em = this.em.fork();
+    return await _em.findOne(TypeAppointmentStatus, id, { populate: ['appointmentStatus'] });
+  }
 
-    async create(typeAppointmentStatus: TypeAppointmentStatusDTO) {
-        const _em = this._em.fork();
-        const newTypeAppointmentStatus = new TypeAppointmentStatus();
+  async create(tas: TypeAppointmentStatusDTO): Promise<TypeAppointmentStatus> {
+    try {
+      if (!tas.name) throw new Error('Faltan datos obligatorios');
 
-        newTypeAppointmentStatus.name = typeAppointmentStatus.name;
+      const _em = this.em.fork();
+      //Creo el Tipo de estado del turno
+      const newTAS = await _em.create(TypeAppointmentStatus, {
+        name: tas.name
+      });
+      if (tas.appointmentStatus) {
+        const appointmentStatusCol = new Collection<AppointmentStatus>(newTAS);
+        for (const appointmentStatusId of tas.appointmentStatus) {
+          const appointmentStatus = await _em.findOne(AppointmentStatus, appointmentStatusId);
 
-        await _em.persistAndFlush(newTypeAppointmentStatus);
-        return newTypeAppointmentStatus;
-    }
-
-    async update(id: string, typeAppointmentStatus: Partial<TypeAppointmentStatusDTO>) {
-        const _em = this._em.fork();
-        const existingTypeAppointmentStatus = await _em.findOne(TypeAppointmentStatus, id);
-        
-
-        if (!existingTypeAppointmentStatus) {
-            throw new Error('No se encontró el estado de cita médica');
+          if (!appointmentStatus) throw new Error(`El estado de turno con id ${appointmentStatusId} no existe`);
+          else appointmentStatusCol.add(appointmentStatus);
         }
-        
-        const newTypeAppointmentStatus = new TypeAppointmentStatus();
-        
-        newTypeAppointmentStatus.id = existingTypeAppointmentStatus.id;
-        newTypeAppointmentStatus.name = typeAppointmentStatus.name || existingTypeAppointmentStatus.name;
+        newTAS.appointmentStatus = appointmentStatusCol;
+      }
 
-        _em.assign(existingTypeAppointmentStatus, newTypeAppointmentStatus);
-        await _em.flush();
+      _em.persistAndFlush(newTAS);
+      return newTAS;
+    } catch (error: any) {
+      logger.error('Error al crear el Tipo de estado del turno', error);
 
-        return existingTypeAppointmentStatus;
+      throw `Fallo al crear el Tipo de estado del turno: ${error.message || error.toString()}`;
+    }
+  }
+
+  async update(id: string, tasUpdate: Partial<TypeAppointmentStatusDTO>): Promise<void> {
+    try {
+      const _em = this.em.fork();
+
+      const result = await _em.nativeUpdate(TypeAppointmentStatus, { id }, tasUpdate);
+    } catch (error: any) {
+      logger.error('Error al actualizar Tipo de estado del turno', error);
+
+      throw `Fallo al actualizar Tipo de estado del turno: ${error.message || error.toString()}`;
+    }
+  }
+
+  async remove(id: string) {
+    const _em = this.em.fork();
+    const typeAppointmentStatus = await _em.findOne(TypeAppointmentStatus, id);
+
+    if (!typeAppointmentStatus) {
+      throw new Error('No se encontró el Tipo de estado del turno');
     }
 
-    async remove(id: string) {
-        const _em = this._em.fork();
-        const typeAppointmentStatus = await _em.findOne(TypeAppointmentStatus, id);
-
-        if (!typeAppointmentStatus) {
-            throw new Error('No se encontró el estado de cita médica');
-        }
-
-        await _em.removeAndFlush(typeAppointmentStatus);
-        return true;
-    }
+    await _em.removeAndFlush(typeAppointmentStatus);
+    return true;
+  }
 }
