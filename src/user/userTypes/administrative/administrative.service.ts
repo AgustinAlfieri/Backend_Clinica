@@ -66,9 +66,7 @@ export class AdministrativeService {
         administrativeUpdate.password = await hashPassword(administrativeUpdate.password);
       }
 
-      const result = await _em.nativeUpdate(Administrative, { id }, administrativeUpdate);
-
-      //No encontro ningun administrativo con ese id
+      await _em.nativeUpdate(Administrative, { id }, administrativeUpdate);
     } catch (error: any) {
       logger.error('Error al actualizar administrativo', error);
 

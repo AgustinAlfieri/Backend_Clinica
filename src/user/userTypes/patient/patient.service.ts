@@ -49,8 +49,6 @@ export class PatientService {
 
         newPatient.medicalInsurance = medicalInsurance;
       }
-
-      // TODO: Revisar si tiene sentido validar los appointments en el create, siendo que para crear turnos el usuario debe existir
       //Si viene con turnos, los busco y asigno
       if (patient.appointments) {
         const appointments = new Collection<Appointment>(newPatient);

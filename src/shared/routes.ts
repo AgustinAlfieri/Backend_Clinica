@@ -26,8 +26,8 @@ const messages: any = {
     Turnos: '/app/v1/appointment'
   },
   'Dentro de cada endpoint': {
-    'Buscar todos': 'findAll',
-    'Buscar uno': 'findOne/:id',
+    'Buscar todos': '/findAll',
+    'Buscar uno': '/findOne/:id',
     Actualizar: '/update/:id',
     Crear: '/create',
     Eliminar: '/remove/:id'
