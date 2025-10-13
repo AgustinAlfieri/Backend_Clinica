@@ -4,6 +4,7 @@ import { AppointmentStatus } from './appointmentStatus.entity.js';
 import { AppError } from '../shared/errorManagment/appError.js';
 import { StatusCodes } from 'http-status-codes';
 import { TypeAppointmentStatus } from '../typeAppointmentStatus/typeAppointmentStatus.entity.js';
+import { logger } from '../shared/logger/logger.js';
 
 const em = orm.em;
 
@@ -49,6 +50,8 @@ async function create(req: Request, res: Response) {
     const typeAppointmentStatus = await em.findOne(TypeAppointmentStatus, {
       id: idTypeAppointmentStatus
     });
+
+    console.log(typeAppointmentStatus);
     if (!typeAppointmentStatus) throw new AppError('Type appointment status does not exist', StatusCodes.BAD_REQUEST);
     const appointmentStatus = new AppointmentStatus(
       new Date(),
@@ -60,6 +63,7 @@ async function create(req: Request, res: Response) {
     res.status(StatusCodes.CREATED).send(appointmentStatus);
   } catch (error) {
     if (!(error instanceof AppError)) {
+      logger.error(error);
       throw new AppError('Error creating appointment status', StatusCodes.INTERNAL_SERVER_ERROR);
     }
   } // Create a new appointmentStatus

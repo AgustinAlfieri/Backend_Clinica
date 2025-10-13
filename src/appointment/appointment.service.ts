@@ -50,17 +50,20 @@ export class AppointmentService {
     const medic = await _em.findOne(Medic, data.medicId);
     if (!medic) throw new Error('No se encontró el médico');
 
-    // Crear collections vacías
-    const statusList = new Collection<AppointmentStatus>(this);
-    const administratives = new Collection<Administrative>(this);
-    const practices = new Collection<Practice>(this);
+    console.log("Hasta acá llego");
+
+    const newAppointment = await _em.create(Appointment,{
+      appointmentDate: data.appointmentDate || new Date(),
+      patient: patient,
+      medic: medic
+    });
 
     // Agregar prácticas si existen
     if (data.practiceIds && data.practiceIds.length > 0) {
       for (const practiceId of data.practiceIds) {
         const practice = await _em.findOne(Practice, practiceId);
         if (!practice) throw new Error(`No se encontró la práctica con id ${practiceId}`);
-        practices.add(practice);
+        newAppointment.practices.add(practice);
       }
     }
 
@@ -69,22 +72,17 @@ export class AppointmentService {
       for (const adminId of data.administrativeIds) {
         const admin = await _em.findOne(Administrative, adminId);
         if (!admin) throw new Error(`No se encontró el administrativo con id ${adminId}`);
-        administratives.add(admin);
+        newAppointment.administratives.add(admin);
       }
     }
 
-    // Crear el appointment con el constructor
-    const appointment = new Appointment(
-      data.appointmentDate || new Date(),
-      statusList,
-      patient,
-      medic,
-      administratives,
-      practices
-    );
 
-    await _em.persistAndFlush(appointment);
-    return appointment;
+
+    // Crear el appointment con el constructor
+
+    await _em.persistAndFlush(newAppointment);
+    // Llamada a appointmentStatus
+    return newAppointment;
   }
 
   async update(id: string, data: AppointmentData): Promise<Appointment> {
