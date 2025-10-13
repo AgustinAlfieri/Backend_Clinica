@@ -6,7 +6,7 @@ import { practiceSchema } from '../shared/schemas/userSchemas.js';
 
 export const practiceRouter = Router();
 
-practiceRouter.get('/findAll', authMiddleware, validateInput({ location: 'body', schema: practiceSchema }), findAll);
+practiceRouter.get('/findAll',findAll, authMiddleware, validateInput({ location: 'body', schema: practiceSchema }), findAll);
 practiceRouter.get(
   '/findOne/:id',
   authMiddleware,
@@ -14,7 +14,7 @@ practiceRouter.get(
   findOne
 );
 practiceRouter.post('/update/:id', authMiddleware, validateInput({ location: 'body', schema: practiceSchema }), update);
-practiceRouter.post('/create', authMiddleware, validateInput({ location: 'body', schema: practiceSchema }), create);
+practiceRouter.post('/create',create, authMiddleware, validateInput({ location: 'body', schema: practiceSchema }), create);
 practiceRouter.delete(
   '/remove/:id',
   authMiddleware,
