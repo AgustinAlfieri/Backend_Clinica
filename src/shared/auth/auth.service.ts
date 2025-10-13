@@ -12,6 +12,7 @@ import { PatientService } from '../../user/userTypes/patient/patient.service.js'
 import { MedicService } from '../../user/userTypes/medic/medic.service.js';
 import { AdministrativeService } from '../../user/userTypes/administrative/administrative.service.js';
 import { customFinder } from '../middlewares/customFinders.js';
+import { Practice } from '../../practice/practice.entity.js';
 
 export interface DataNewUser {
   role: string;
@@ -27,6 +28,8 @@ export interface DataNewUser {
   medicalInsurance: MedicalInsurance;
   medicalSpecialty: Collection<MedicalSpecialty>;
   appointments: Collection<Appointment>;
+  practices: Collection<Practice>;
+  medicalProfessionals: Collection<Medic>;
 }
 export interface userCredentials {
   input: string;

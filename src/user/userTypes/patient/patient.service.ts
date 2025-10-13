@@ -5,6 +5,7 @@ import { MedicalInsurance } from '../../../medicalInsurance/medicalInsurance.ent
 import { Role } from '../../../shared/enums/role.enum.js';
 import { logger } from '../../../shared/logger/logger.js';
 import { Appointment } from '../../../appointment/appointment.entity.js';
+import { resolveMessage } from '../../../shared/errorManagment/appError.js';
 
 export class PatientService {
   constructor(private em: EntityManager) {}
@@ -22,13 +23,14 @@ export class PatientService {
   async create(patient: DataNewUser): Promise<Patient> {
     try {
       //Validaciones basicas
-      if (!patient.dni || !patient.email) throw new Error('Debe ingresar dni o email');
+      if (!patient.email && !patient.dni) throw new Error('Debe ingresar dni o email');
 
       if (!patient.name || !patient.password) throw new Error('Faltan datos obligatorios');
 
       const _em = this.em.fork();
+      
       //Creo el paciente
-      const newPatient = await _em.create(Patient, {
+      const newPatient = _em.create(Patient, {
         dni: patient.dni,
         name: patient.name,
         email: patient.email,
@@ -66,7 +68,7 @@ export class PatientService {
     } catch (error: any) {
       logger.error('Error al crear el paciente', error);
 
-      throw `Fallo al crear el paciente: ${error.message || error.toString()}`;
+      throw `Fallo al crear el paciente: ${resolveMessage(error)}`;
     }
   }
 
@@ -77,11 +79,11 @@ export class PatientService {
       //Si quiere actualizar la password, la hasheo
       if (patientUpdate.password) patientUpdate.password = await hashPassword(patientUpdate.password);
 
-      const result = await _em.nativeUpdate(Patient, { id }, patientUpdate);
+      _em.nativeUpdate(Patient, { id }, patientUpdate);
     } catch (error: any) {
       logger.error('Error al actualizar paciente', error);
 
-      throw `Fallo al actualizar paciente: ${error.message || error.toString()}`;
+      throw `Fallo al actualizar paciente: ${resolveMessage(error)}`;
     }
   }
 
@@ -91,10 +93,12 @@ export class PatientService {
       const patient = await _em.findOneOrFail(Patient, id);
 
       await _em.removeAndFlush(patient);
-      return true;
+      
+      return patient;
     } catch (error) {
       logger.error('Error al eliminar paciente', error);
-      return false;
+
+      throw `Fallo al eliminar paciente: ${resolveMessage(error)}`;
     }
   }
 }

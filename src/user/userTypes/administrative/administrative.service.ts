@@ -1,9 +1,10 @@
 import { Collection, EntityManager } from '@mikro-orm/mysql';
 import { Administrative } from './administrative.entity.js';
-import { comparePassword, DataNewUser, hashPassword } from '../../../shared/auth/auth.service.js';
+import { DataNewUser, hashPassword } from '../../../shared/auth/auth.service.js';
 import { Appointment } from '../../../appointment/appointment.entity.js';
 import { Role } from '../../../shared/enums/role.enum.js';
 import { logger } from '../../../shared/logger/logger.js';
+import { resolveMessage } from '../../../shared/errorManagment/appError.js';
 
 export class AdministrativeService {
   constructor(private em: EntityManager) {}
@@ -20,15 +21,15 @@ export class AdministrativeService {
 
   async create(administrative: DataNewUser): Promise<Administrative> {
     try {
+      const _em = this.em.fork();
+      
       // Validaciones básicas
-      if (!administrative.dni || !administrative.email) {
-        throw new Error('Debe ingresar dni y email');
+      if (!administrative.dni && !administrative.email) {
+        throw new Error('Debe ingresar dni o email');
       }
       if (!administrative.name || !administrative.password) {
         throw new Error('Faltan datos obligatorios');
       }
-      const _em = this.em.fork();
-
       // Crear el administrativo
       const newAdministrative = await _em.create(Administrative, {
         dni: administrative.dni,
@@ -54,7 +55,7 @@ export class AdministrativeService {
       return newAdministrative;
     } catch (error: any) {
       logger.error('Error al crear el administrativo', error);
-      throw `Fallo al crear el administrativo: ${error.message || error.toString()}`;
+      throw `Fallo al crear el administrativo: ${resolveMessage(error)}`;
     }
   }
 
@@ -62,28 +63,30 @@ export class AdministrativeService {
     try {
       const _em = this.em.fork();
       // Si quiere actualizar la password, la hasheo
-      if (administrativeUpdate.password) {
+      if (administrativeUpdate.password)
         administrativeUpdate.password = await hashPassword(administrativeUpdate.password);
-      }
 
-      await _em.nativeUpdate(Administrative, { id }, administrativeUpdate);
+      _em.nativeUpdate(Administrative, { id }, administrativeUpdate);
+
     } catch (error: any) {
       logger.error('Error al actualizar administrativo', error);
 
-      throw `Fallo al actualizar administrativo: ${error.message || error.toString()}`;
+      throw `Fallo al actualizar administrativo: ${resolveMessage(error)}`;
     }
   }
 
-  async remove(id: string): Promise<boolean> {
+  async remove(id: string) {
     try {
       const _em = this.em.fork();
       const administrative = await _em.findOneOrFail(Administrative, id);
 
       await _em.removeAndFlush(administrative);
-      return true;
+      
+      return administrative;
     } catch (error: any) {
       logger.error('Error al eliminar administrativo', error);
-      return false;
+      
+      throw `Error al eliminar administrativo: ${resolveMessage(error)}`;
     }
   }
 }

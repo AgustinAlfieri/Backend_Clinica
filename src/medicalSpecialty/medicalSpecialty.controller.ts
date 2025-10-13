@@ -1,10 +1,9 @@
 import { orm } from '../shared/database/orm.js';
-import { NextFunction, Request, Response } from 'express';
+import { Request, Response } from 'express';
 import { StatusCodes } from 'http-status-codes';
 import { MedicalSpecialtyService } from './medicalSpecialty.service.js';
 import { ResponseManager } from '../shared/helpers/responseHelper.js';
 import { logger } from '../shared/logger/logger.js';
-import { Logger } from 'winston';
 import { resolveMessage } from '../shared/errorManagment/appError.js';
 
 const em = orm.em;
@@ -23,8 +22,7 @@ async function findAll(req: Request, res: Response) {
   } catch (error) {
     logger.error('Error al obtener las especialidades médicas', { error });
 
-    const errorMessage = resolveMessage(error);
-    ResponseManager.error(res, errorMessage, 'Error al obtener las especialidades médicas', StatusCodes.INTERNAL_SERVER_ERROR);
+    ResponseManager.error(res, resolveMessage(error), 'Error al obtener las especialidades médicas', StatusCodes.INTERNAL_SERVER_ERROR);
   }
 }
 
@@ -44,17 +42,14 @@ async function findOne(req: Request, res: Response) {
   } catch (error) {
     logger.error('Error al obtener la especialidad médica', { error });
 
-    const errorMessage = resolveMessage(error);
-    ResponseManager.error(res, errorMessage, 'Error al obtener la especialidad médica', StatusCodes.INTERNAL_SERVER_ERROR);
+    ResponseManager.error(res, resolveMessage(error), 'Error al obtener la especialidad médica', StatusCodes.INTERNAL_SERVER_ERROR);
   }
 }
 
 async function update(req: Request, res: Response) {
-  try{
-    const id = req.params.id;
-
+  try {
     const medicalSpecialtyService =  new MedicalSpecialtyService(em);
-    const updatedSpecialty = await medicalSpecialtyService.update(id, req.body.sanitizedInput);
+    const updatedSpecialty = await medicalSpecialtyService.update(req.body);
 
     if(!updatedSpecialty){
       ResponseManager.badRequest(res, 'Error al actualizar la especialidad médica');
@@ -65,8 +60,7 @@ async function update(req: Request, res: Response) {
   } catch (error) {
     logger.error('Error al actualizar la especialidad médica', { error });
 
-    const errorMessage = resolveMessage(error);
-    ResponseManager.error(res, errorMessage, 'Error al actualizar la especialidad médica', StatusCodes.INTERNAL_SERVER_ERROR);
+    ResponseManager.error(res, resolveMessage(error), 'Error al actualizar la especialidad médica', StatusCodes.INTERNAL_SERVER_ERROR);
   }
 }
 
@@ -84,8 +78,7 @@ async function create(req: Request, res: Response) {
   } catch (error) {
     logger.error('Error al crear la especialidad médica', { error });
 
-    const errorMessage = resolveMessage(error);
-    ResponseManager.error(res, errorMessage, 'Error al crear la especialidad médica', StatusCodes.INTERNAL_SERVER_ERROR);
+    ResponseManager.error(res, resolveMessage(error), 'Error al crear la especialidad médica', StatusCodes.INTERNAL_SERVER_ERROR);
   }
 }
 async function remove(req: Request, res: Response) {
@@ -97,10 +90,9 @@ async function remove(req: Request, res: Response) {
 
     ResponseManager.success(res, null, 'Especialidad médica eliminada correctamente', StatusCodes.OK);
   } catch (error) {
-    logger.error('Error al eliminar la especialidad médica', { error });
+    logger.error('Error al eliminar la especialidad médica', error);
 
-    const errorMessage = resolveMessage(error);
-    ResponseManager.error(res, errorMessage, 'Error al eliminar la especialidad médica', StatusCodes.INTERNAL_SERVER_ERROR);
+    ResponseManager.error(res, resolveMessage(error), 'Error al eliminar la especialidad médica', StatusCodes.INTERNAL_SERVER_ERROR);
   }
 }
 

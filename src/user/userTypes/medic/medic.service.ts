@@ -3,9 +3,9 @@ import { Medic } from './medic.entity.js';
 import { DataNewUser, hashPassword } from '../../../shared/auth/auth.service.js';
 import { Role } from '../../../shared/enums/role.enum.js';
 import { MedicalSpecialty } from '../../../medicalSpecialty/medicalSpecialty.entity.js';
-import { comparePassword } from '../../../shared/auth/auth.service.js';
 import { logger } from '../../../shared/logger/logger.js';
 import { Appointment } from '../../../appointment/appointment.entity.js';
+import { resolveMessage } from '../../../shared/errorManagment/appError.js';
 
 interface TimeSlot {
   datetime: string; // ISO string
@@ -39,13 +39,13 @@ export class MedicService {
   async create(medic: DataNewUser): Promise<Medic> {
     try {
       // Validaciones básicas
-      if (!medic.dni || !medic.email) throw new Error('Debe ingresar dni o email');
+      if (!medic.dni && !medic.email) throw new Error('Debe ingresar dni o email');
 
       if (!medic.name || !medic.password || !medic.license) throw new Error('Faltan datos obligatorios');
 
       const _em = this.em.fork();
       // Creo el médico
-      const newMedic = await _em.create(Medic, {
+      const newMedic = _em.create(Medic, {
         dni: medic.dni,
         name: medic.name,
         email: medic.email,
@@ -59,9 +59,10 @@ export class MedicService {
       if (medic.medicalSpecialty && medic.medicalSpecialty.length > 0) {
         for (const specialtyId of medic.medicalSpecialty) {
           const specialty = await _em.findOne(MedicalSpecialty, specialtyId);
-          if (!specialty) {
+
+          if (!specialty)
             throw new Error(`La especialidad con id ${specialtyId} no existe`);
-          }
+
           newMedic.medicalSpecialty.add(specialty);
         }
       }
@@ -89,16 +90,15 @@ export class MedicService {
       const _em = this.em.fork();
 
       // Si quiere actualizar la password, la hasheo
-      if (medicUpdate.password) {
+      if (medicUpdate.password)
         medicUpdate.password = await hashPassword(medicUpdate.password);
-      }
-      const result = await _em.nativeUpdate(Medic, { id }, medicUpdate);
+      
+      _em.nativeUpdate(Medic, { id }, medicUpdate);
 
-      //No encontro ningun paciente con ese id
     } catch (error: any) {
       logger.error('Error al actualizar medico', error);
 
-      throw `Fallo al actualizar medico: ${error.message || error.toString()}`;
+      throw `Fallo al actualizar medico: ${resolveMessage(error)}`;
     }
   }
 
@@ -110,7 +110,8 @@ export class MedicService {
       await _em.removeAndFlush(medic);
     } catch (error: any) {
       logger.error('Error al eliminar médico', error);
-      throw `Error al eliminar médico: ${error.message || error.toString()}`;
+
+      throw `Error al eliminar médico: ${resolveMessage(error)}`;
     }
   }
 
