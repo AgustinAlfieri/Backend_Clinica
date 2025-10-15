@@ -13,13 +13,13 @@ export class MedicalInsuranceService {
   constructor(private em: EntityManager) {}
 
   async findAll() {
-    const _em = this.em.fork(); //Crea una copia
-        return await _em.find( //busca en la base de datos
-          MedicalInsurance, //es la entidad que busca
-          {}, //filtro
+    const _em = this.em.fork(); 
+        return await _em.find(
+          MedicalInsurance, 
+          {},
           {
             populate: ['patients','practices']
-          } //relaciones de la entidad
+          } 
         );
   }
   async findOne(id: string) {
