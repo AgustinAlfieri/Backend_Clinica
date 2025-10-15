@@ -23,7 +23,7 @@ export class AppointmentService {
       Appointment,
       {},
       {
-        populate: ['patient', 'medic', 'practices', 'administratives', 'statusList']
+        populate: ['patient', 'medic', 'practices', 'administratives', 'appointmentsStatus']
       }
     );
   }
@@ -31,7 +31,7 @@ export class AppointmentService {
   async findOne(id: string) {
     const _em = this.em.fork();
     return await _em.findOne(Appointment, id, {
-      populate: ['patient', 'medic', 'practices', 'administratives', 'statusList']
+      populate: ['patient', 'medic', 'practices', 'administratives', 'appointmentsStatus']
     });
   }
 
@@ -39,7 +39,7 @@ export class AppointmentService {
     const _em = this.em.fork();
 
     if (!data.patientId || !data.medicId) {
-      throw new Error('Paciente y médico son obligatorios');
+      throw new Error('Paciente y médico son obligatorios'); //Si son obligatorios,porque llevan ?
     }
 
     // Buscar el paciente
@@ -88,7 +88,7 @@ export class AppointmentService {
   async update(id: string, data: AppointmentData): Promise<Appointment> {
     const _em = this.em.fork();
     const existingAppointment = await _em.findOne(Appointment, id, {
-      populate: ['patient', 'medic', 'practices', 'administratives', 'statusList']
+      populate: ['patient', 'medic', 'practices', 'administratives', 'appointmentsStatus']
     });
 
     if (!existingAppointment) {

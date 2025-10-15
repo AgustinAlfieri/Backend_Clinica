@@ -11,5 +11,5 @@ export class TypeAppointmentStatus {
   name!: string;
 
   @OneToMany(() => AppointmentStatus, (ap) => ap.typeAppointmentStatus)
-  appointmentStatus = new Collection<AppointmentStatus>(this);
+  appointmentsStatus = new Collection<AppointmentStatus>(this);
 }

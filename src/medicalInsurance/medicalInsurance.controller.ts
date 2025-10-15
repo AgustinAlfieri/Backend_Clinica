@@ -6,22 +6,8 @@ import { StatusCodes } from 'http-status-codes';
 
 const em = orm.em.fork();
 
-function sanitizeInputMedicalInsurance(req: Request, res: Response, next: NextFunction) {
-  req.body.sanitizedInput = {
-    name: req.body.name,
-    coveredPractices: req.body.coveredPractices,
-    clients: req.body.clients
-  };
-  Object.keys(req.body.sanitizedInput).forEach((key) => {
-    if (req.body.sanitizedInput[key] === undefined) {
-      delete req.body.sanitizedInput[key];
-    }
-  });
-  next();
-}
-
 async function findAll(req: Request, res: Response) {
-  const medicalInsurances = await em.find(MedicalInsurance, {}, { populate: ['coveredPractices', 'clients'] });
+  const medicalInsurances = await em.find(MedicalInsurance, {}, { populate: ['practices', 'patients'] });
 
   if (!medicalInsurances) throw new AppError('Obras Sociales no encontradas', StatusCodes.NOT_FOUND);
 
@@ -31,7 +17,7 @@ async function findAll(req: Request, res: Response) {
 async function findOne(req: Request, res: Response) {
   const id = req.params.id;
   const medicalInsurance = await em.findOne(MedicalInsurance, id, {
-    populate: ['coveredPractices', 'clients']
+    populate: ['practices', 'patients']
   });
 
   if (!medicalInsurance) throw new AppError('Obra Social no encontrada', StatusCodes.NOT_FOUND);
@@ -41,7 +27,7 @@ async function findOne(req: Request, res: Response) {
 
 async function update(req: Request, res: Response) {
   const id = req.params.id;
-  const medicalInsurance = await em.findOneOrFail(MedicalInsurance, id, { populate: ['coveredPractices', 'clients'] });
+  const medicalInsurance = await em.findOneOrFail(MedicalInsurance, id, { populate: ['practices', 'patients'] });
 
   const medicalInsuranceUpdated = em.assign(medicalInsurance, req.body.sanitizedInput);
 
@@ -68,4 +54,4 @@ async function remove(req: Request, res: Response) {
   res.status(StatusCodes.ACCEPTED).send('Especialidad médica eliminada');
 }
 
-export { sanitizeInputMedicalInsurance, findAll, findOne, update, create, remove };
+export {  findAll, findOne, update, create, remove };

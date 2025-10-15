@@ -12,14 +12,14 @@ export class MedicalInsurance {
   name: string;
 
   @ManyToMany(() => Practice, (practice) => practice.medicalInsurances)
-  coveredPractices = new Collection<Practice>(this);
+  practices = new Collection<Practice>(this);
 
   @OneToMany(() => Patient, (patient) => patient.medicalInsurance, { cascade: [Cascade.ALL] })
-  clients = new Collection<Patient>(this);
+  patients = new Collection<Patient>(this);
 
   constructor(name: string, coveredPractices: Collection<Practice>, clients: Collection<Patient>) {
     this.name = name;
-    this.coveredPractices = coveredPractices;
-    this.clients = clients;
+    this.practices = coveredPractices;
+    this.patients = clients;
   }
 }

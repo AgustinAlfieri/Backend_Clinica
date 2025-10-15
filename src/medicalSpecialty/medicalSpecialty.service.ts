@@ -8,7 +8,7 @@ interface MedicalSpecialtyInput {
   id?: string;
   name: string;
   practices?: Collection<Practice>;
-  medicalProfessionals?: Collection<Medic>;
+  medics?: Collection<Medic>;
 }
 
 export class MedicalSpecialtyService {
@@ -16,12 +16,12 @@ export class MedicalSpecialtyService {
 
   async findAll() {
     const em = this.em.fork();
-    return await em.find(MedicalSpecialty, {}, { populate: ['practices', 'medicalProfessionals'] });
+    return await em.find(MedicalSpecialty, {}, { populate: ['practices', 'medics'] });
   }
 
   async findOne(id: string) {
     const em = this.em.fork();
-    return await em.findOne(MedicalSpecialty, id, {populate: ['practices', 'medicalProfessionals']});
+    return await em.findOne(MedicalSpecialty, id, {populate: ['practices', 'medics']});
   }
 
   async update(medicalSpecialtyData: Partial<MedicalSpecialtyInput>) {

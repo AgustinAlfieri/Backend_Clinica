@@ -8,7 +8,6 @@ export const typeAppointmentStatusRouter = Router();
 // Get all typeAppointmentStatus
 typeAppointmentStatusRouter.get(
   '/findAll',
-  findAll,
   authMiddleware,
   validateInput({ location: 'body', schema: typeAppointmentStatusSchema }),
   findAll
@@ -17,7 +16,6 @@ typeAppointmentStatusRouter.get(
 // Get one typeAppointmentStatus by id
 typeAppointmentStatusRouter.get(
   '/findOne/:id',
-  findOne,
   authMiddleware,
   validateInput({ location: 'body', schema: typeAppointmentStatusSchema }),
   findOne
@@ -26,7 +24,6 @@ typeAppointmentStatusRouter.get(
 // Create a new typeAppointmentStatus
 typeAppointmentStatusRouter.post(
   '/create',
-  create,
   authMiddleware,
   validateInput({ location: 'body', schema: typeAppointmentStatusSchema }),
   create
@@ -35,7 +32,6 @@ typeAppointmentStatusRouter.post(
 // Update a typeAppointmentStatus by id
 typeAppointmentStatusRouter.post(
   '/update/:id',
-  update,
   authMiddleware,
   validateInput({ location: 'body', schema: typeAppointmentStatusSchema }),
   update
@@ -44,7 +40,6 @@ typeAppointmentStatusRouter.post(
 // Remove a typeAppointmentStatus by id
 typeAppointmentStatusRouter.delete(
   '/remove/:id',
-  remove,
   authMiddleware,
   validateInput({ location: 'body', schema: typeAppointmentStatusSchema }),
   remove

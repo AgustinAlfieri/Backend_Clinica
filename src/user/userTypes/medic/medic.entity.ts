@@ -8,7 +8,7 @@ export class Medic extends User {
   @Property({ unique: true })
   license!: string;
 
-  @ManyToMany(() => MedicalSpecialty, (medicalSpecialty) => medicalSpecialty.medicalProfessionals)
+  @ManyToMany(() => MedicalSpecialty, (medicalSpecialty) => medicalSpecialty.medics)
   medicalSpecialty = new Collection<MedicalSpecialty>(this);
 
   @OneToMany(() => Appointment, (appointment) => appointment.medic, { cascade: [Cascade.ALL] })

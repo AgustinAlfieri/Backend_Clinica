@@ -8,21 +8,6 @@ import { logger } from '../shared/logger/logger.js';
 
 const em = orm.em;
 
-function sanitizeInputAS(req: Request, res: Response, next: NextFunction) {
-  req.body.sanitizedInput = {
-    date: new Date(),
-    observations: req.body.observations,
-    idTypeAppointmentStatus: req.body.idTypeAppointmentStatus,
-    appointment: req.body.appointment
-  };
-  Object.keys(req.body.sanitizedInput).forEach((key) => {
-    if (req.body.sanitizedInput[key] === undefined) {
-      delete req.body.sanitizedInput[key];
-    }
-  });
-  next();
-}
-
 async function findAll(req: Request, res: Response) {
   const appointmentStatus = await em.find(
     AppointmentStatus,
@@ -90,5 +75,5 @@ async function remove(req: Request, res: Response) {
   res.status(StatusCodes.ACCEPTED).send('Appointment status removed'); // Send a message
 } // Remove a appointmentStatus by id
 
-export { findAll, findOne, create, update, remove, sanitizeInputAS };
+export { findAll, findOne, create, update, remove};
 // export {findAll, findOne, create, update, remove} from "./appointmentStatus.controller.js";

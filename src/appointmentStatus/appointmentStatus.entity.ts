@@ -12,7 +12,7 @@ export class AppointmentStatus {
   date!: Date;
 
   @Property()
-  observations?: string;
+  observation?: string;
 
   @ManyToOne(() => TypeAppointmentStatus)
   typeAppointmentStatus: Rel<TypeAppointmentStatus>;
@@ -23,7 +23,7 @@ export class AppointmentStatus {
   constructor(date: Date, typeAppoitmentStatus: TypeAppointmentStatus, appointment: Rel<Appointment>, observations?: string)
   {
     this.date = date;
-    this.observations = observations;
+    this.observation = observations;
     this.typeAppointmentStatus = typeAppoitmentStatus;
     this.appointment = appointment;
   }

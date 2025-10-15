@@ -5,7 +5,7 @@ import { logger } from '../shared/logger/logger.js';
 
 interface TypeAppointmentStatusDTO {
   name: string;
-  appointmentStatus: Collection<AppointmentStatus>;
+  appointmentsStatus: Collection<AppointmentStatus>;
 }
 
 export class TypeAppointmentStatusService {
@@ -13,12 +13,12 @@ export class TypeAppointmentStatusService {
 
   async findAll() {
     const _em = this.em.fork();
-    return await _em.find(TypeAppointmentStatus, {}, { populate: ['appointmentStatus'] });
+    return await _em.find(TypeAppointmentStatus, {}, { populate: ['appointmentsStatus'] });
   }
 
   async findOne(id: string) {
     const _em = this.em.fork();
-    return await _em.findOne(TypeAppointmentStatus, id, { populate: ['appointmentStatus'] });
+    return await _em.findOne(TypeAppointmentStatus, id, { populate: ['appointmentsStatus'] });
   }
 
   async create(tas: TypeAppointmentStatusDTO): Promise<TypeAppointmentStatus> {
@@ -30,15 +30,15 @@ export class TypeAppointmentStatusService {
       const newTAS = await _em.create(TypeAppointmentStatus, {
         name: tas.name
       });
-      if (tas.appointmentStatus) {
+      if (tas.appointmentsStatus) {
         const appointmentStatusCol = new Collection<AppointmentStatus>(newTAS);
-        for (const appointmentStatusId of tas.appointmentStatus) {
+        for (const appointmentStatusId of tas.appointmentsStatus) {
           const appointmentStatus = await _em.findOne(AppointmentStatus, appointmentStatusId);
 
           if (!appointmentStatus) throw new Error(`El estado de turno con id ${appointmentStatusId} no existe`);
           else appointmentStatusCol.add(appointmentStatus);
         }
-        newTAS.appointmentStatus = appointmentStatusCol;
+        newTAS.appointmentsStatus = appointmentStatusCol;
       }
 
       _em.persistAndFlush(newTAS);

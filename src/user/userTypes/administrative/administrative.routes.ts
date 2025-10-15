@@ -7,7 +7,7 @@ import { administrativeSchema } from '../../../shared/schemas/userSchemas.js';
 export const administrativeRouter = Router();
 
 administrativeRouter.get(
-  '/findAll',findAll,
+  '/findAll',
   authMiddleware,
   validateInput({ location: 'body', schema: administrativeSchema }),
   findAll

@@ -7,7 +7,7 @@ import { getMedicSchedule } from "./medic.controller.js";
 
 export const routerMedic = Router();
 
-routerMedic.get('/findAll',findAll, authMiddleware, validateInput({ location: 'body', schema: medicSchema }), findAll);
+routerMedic.get('/findAll', authMiddleware, validateInput({ location: 'body', schema: medicSchema }), findAll);
 routerMedic.get('/findOne/:id', authMiddleware, validateInput({ location: 'params', schema: medicSchema }), findOne);
 routerMedic.post('/update/:id', authMiddleware, validateInput({ location: 'body', schema: medicSchema }), update);
 routerMedic.post('/create', authMiddleware, validateInput({ location: 'body', schema: medicSchema }), create);
