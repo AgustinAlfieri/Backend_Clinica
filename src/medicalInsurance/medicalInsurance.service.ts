@@ -12,30 +12,34 @@ export interface MedicalInsuranceData {
 export class MedicalInsuranceService {
   constructor(private em: EntityManager) {}
 
+  async findAllForRegister() {
+    const _em = this.em.fork();
+    return await _em.find(MedicalInsurance, {});
+  }
   async findAll() {
-    const _em = this.em.fork(); 
-        return await _em.find(
-          MedicalInsurance, 
-          {},
-          {
-            populate: ['patients','practices']
-          } 
-        );
+    const _em = this.em.fork();
+    return await _em.find(
+      MedicalInsurance,
+      {},
+      {
+        populate: ['patients', 'practices']
+      }
+    );
   }
   async findOne(id: string) {
     const _em = this.em.fork();
-          return await _em.findOne(MedicalInsurance, id, {
-            populate: ['patients','practices']
-          });
+    return await _em.findOne(MedicalInsurance, id, {
+      populate: ['patients', 'practices']
+    });
   }
 
   async create(data: MedicalInsuranceData): Promise<MedicalInsurance> {
     const _em = this.em.fork();
 
-    const newMedicalInsurance = await _em.create(MedicalInsurance,{
-        name: data.name
-        });
-    
+    const newMedicalInsurance = await _em.create(MedicalInsurance, {
+      name: data.name
+    });
+
     if (data.practiceIds && data.practiceIds.length > 0) {
       for (const practiceId of data.practiceIds) {
         const practice = await _em.findOne(Practice, practiceId);
@@ -59,7 +63,7 @@ export class MedicalInsuranceService {
   async update(id: string, data: MedicalInsuranceData): Promise<MedicalInsurance> {
     const _em = this.em.fork();
     const existingMedicalInsurance = await _em.findOne(MedicalInsurance, id, {
-      populate: ['patients','practices']
+      populate: ['patients', 'practices']
     });
 
     if (!existingMedicalInsurance) {
@@ -92,15 +96,15 @@ export class MedicalInsuranceService {
     return existingMedicalInsurance;
   }
 
-  async remove(id: string): Promise<boolean>{
+  async remove(id: string): Promise<boolean> {
     const _em = this.em.fork();
-        const medicalInsurance = await _em.findOne(MedicalInsurance, id);
-    
-        if (!medicalInsurance) {
-          throw new Error('No se encontró la obra social');
-        }
-    
-        await _em.removeAndFlush(medicalInsurance);
-        return true;
+    const medicalInsurance = await _em.findOne(MedicalInsurance, id);
+
+    if (!medicalInsurance) {
+      throw new Error('No se encontró la obra social');
+    }
+
+    await _em.removeAndFlush(medicalInsurance);
+    return true;
   }
 }

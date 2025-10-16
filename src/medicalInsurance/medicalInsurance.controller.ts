@@ -1,10 +1,36 @@
 import { orm } from '../shared/database/orm.js';
 import { NextFunction, Request, Response } from 'express';
 import { MedicalInsurance } from './medicalInsurance.entity.js';
-import { AppError } from '../shared/errorManagment/appError.js';
+import { AppError, resolveMessage } from '../shared/errorManagment/appError.js';
 import { StatusCodes } from 'http-status-codes';
+import { MedicalInsuranceService } from './medicalInsurance.service.js';
+import { ResponseManager } from '../shared/helpers/responseHelper.js';
+import { logger } from '../shared/logger/logger.js';
 
 const em = orm.em.fork();
+
+async function findAllForRegister(req: Request, res: Response) {
+  try {
+    //Solo trae id y name
+    const medicalInsuranceService = new MedicalInsuranceService(em);
+    const medicalInsurances = await medicalInsuranceService.findAllForRegister();
+    if (!medicalInsurances) {
+      ResponseManager.notFound(res, 'No se encontraron obras sociales');
+      return;
+    }
+
+    ResponseManager.success(res, medicalInsurances, 'Obras Sociales obtenidas', StatusCodes.OK);
+  } catch (error) {
+    logger.error('Error al obtener las Obras Sociales', { error });
+
+    ResponseManager.error(
+      res,
+      resolveMessage(error),
+      'Error al obtener las Obras Sociales',
+      StatusCodes.INTERNAL_SERVER_ERROR
+    );
+  }
+}
 
 async function findAll(req: Request, res: Response) {
   const medicalInsurances = await em.find(MedicalInsurance, {}, { populate: ['practices', 'patients'] });
@@ -54,4 +80,4 @@ async function remove(req: Request, res: Response) {
   res.status(StatusCodes.ACCEPTED).send('Especialidad médica eliminada');
 }
 
-export {  findAll, findOne, update, create, remove };
+export { findAllForRegister, findAll, findOne, update, create, remove };
