@@ -6,8 +6,33 @@ import { practiceSchema } from '../shared/schemas/userSchemas.js';
 
 export const practiceRouter = Router();
 
-practiceRouter.get('/findAll', authMiddleware, validateInput({ location: 'body', schema: practiceSchema }), findAll);
-practiceRouter.get('/findOne/:id', authMiddleware, validateInput({ location: 'body', schema: practiceSchema }),findOne);
-practiceRouter.post('/update/:id', authMiddleware, validateInput({ location: 'body', schema: practiceSchema }), update);
-practiceRouter.post('/create',create, authMiddleware, validateInput({ location: 'body', schema: practiceSchema }), create);
-practiceRouter.delete('/remove/:id', authMiddleware, validateInput({ location: 'body', schema: practiceSchema }), remove);
+practiceRouter.get(
+  '/findAll',
+  authMiddleware('Practice', 'view'),
+  validateInput({ location: 'body', schema: practiceSchema }),
+  findAll
+);
+practiceRouter.get(
+  '/findOne/:id',
+  authMiddleware('Practice', 'view'),
+  validateInput({ location: 'body', schema: practiceSchema }),
+  findOne
+);
+practiceRouter.post(
+  '/update/:id',
+  authMiddleware('Practice', 'update'),
+  validateInput({ location: 'body', schema: practiceSchema }),
+  update
+);
+practiceRouter.post(
+  '/create',
+  authMiddleware('Practice', 'create'),
+  validateInput({ location: 'body', schema: practiceSchema }),
+  create
+);
+practiceRouter.delete(
+  '/remove/:id',
+  authMiddleware('Practice', 'delete'),
+  validateInput({ location: 'body', schema: practiceSchema }),
+  remove
+);

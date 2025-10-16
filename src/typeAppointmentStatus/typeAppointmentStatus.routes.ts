@@ -5,42 +5,33 @@ import { validateInput } from '../shared/middlewares/validateInput.js';
 import { typeAppointmentStatusSchema } from '../shared/schemas/appointmentRelatedSchemas.js';
 
 export const typeAppointmentStatusRouter = Router();
-// Get all typeAppointmentStatus
 typeAppointmentStatusRouter.get(
   '/findAll',
-  authMiddleware,
+  authMiddleware('TypeAppointmentStatus', 'view'),
   validateInput({ location: 'body', schema: typeAppointmentStatusSchema }),
   findAll
 );
-
-// Get one typeAppointmentStatus by id
 typeAppointmentStatusRouter.get(
   '/findOne/:id',
-  authMiddleware,
+  authMiddleware('TypeAppointmentStatus', 'view'),
   validateInput({ location: 'body', schema: typeAppointmentStatusSchema }),
   findOne
 );
-
-// Create a new typeAppointmentStatus
 typeAppointmentStatusRouter.post(
   '/create',
-  authMiddleware,
+  authMiddleware('TypeAppointmentStatus', 'create'),
   validateInput({ location: 'body', schema: typeAppointmentStatusSchema }),
   create
 );
-
-// Update a typeAppointmentStatus by id
 typeAppointmentStatusRouter.post(
   '/update/:id',
-  authMiddleware,
+  authMiddleware('TypeAppointmentStatus', 'update'),
   validateInput({ location: 'body', schema: typeAppointmentStatusSchema }),
   update
 );
-
-// Remove a typeAppointmentStatus by id
 typeAppointmentStatusRouter.delete(
   '/remove/:id',
-  authMiddleware,
+  authMiddleware('TypeAppointmentStatus', 'delete'),
   validateInput({ location: 'body', schema: typeAppointmentStatusSchema }),
   remove
 );

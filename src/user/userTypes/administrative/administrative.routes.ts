@@ -8,31 +8,31 @@ export const administrativeRouter = Router();
 
 administrativeRouter.get(
   '/findAll',
-  authMiddleware,
+  authMiddleware('Administrative', 'view'),
   validateInput({ location: 'body', schema: administrativeSchema }),
   findAll
 );
 administrativeRouter.get(
   '/findOne/:id',
-  authMiddleware,
+  authMiddleware('Administrative', 'view'),
   validateInput({ location: 'params', schema: administrativeSchema }),
   findOne
 );
 administrativeRouter.post(
   '/update/:id',
-  authMiddleware,
+  authMiddleware('Administrative', 'update'),
   validateInput({ location: 'body', schema: administrativeSchema }),
   update
 );
 administrativeRouter.post(
   '/create',
-  authMiddleware,
+  authMiddleware('Administrative', 'create'),
   validateInput({ location: 'body', schema: administrativeSchema }),
   create
 );
 administrativeRouter.delete(
   '/remove/:id',
-  authMiddleware,
+  authMiddleware('Administrative', 'delete'),
   validateInput({ location: 'params', schema: administrativeSchema }),
   remove
 );
