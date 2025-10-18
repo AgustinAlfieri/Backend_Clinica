@@ -65,7 +65,7 @@ export const comparePassword = async (password: string, hashedPassword: string):
 };
 
 export const generateToken = (userId: string, role: string): string => {
-  const secret = process.env.SECRET || 'sinSecret'; //hacer un get
+  const secret = process.env.SECRET || 'sinSecret';
 
   const payload: payload = {
     userId: userId,
@@ -154,8 +154,6 @@ export const login = async (credentials: userCredentials): Promise<AuthResponse>
 
 //Para registrar un nuevo usuario
 export const register = async (dataNewUser: DataNewUser): Promise<AuthResponse> => {
-  //No hago el fork aca porque lo hacen los servicios
-  //const _em = em.fork();
   console.log(dataNewUser);
 
   const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
@@ -165,26 +163,22 @@ export const register = async (dataNewUser: DataNewUser): Promise<AuthResponse> 
     throw new Error('Email inválido');
   }
 
-  console.log('Hasta acá llego 1');
-
   if (dataNewUser.password.length < 8) {
     throw new Error('La contraseña debe tener al menos 8 caracteres');
   }
 
   let newUserId: string;
-  console.log('Hasta acá llego 2');
 
   switch (dataNewUser.role) {
     case 'Patient':
       const pService = new PatientService(em);
       const newPatient = await pService.create(dataNewUser);
       newUserId = newPatient.id;
-      console.log('Hasta acá llego 3');
       break;
     case 'Medic':
       const mService = new MedicService(em);
       const newMedic = await mService.create(dataNewUser);
-      newUserId = newMedic.id; //para poder firmar ok el token
+      newUserId = newMedic.id;
       break;
     case 'Administrative':
       const aService = new AdministrativeService(em);

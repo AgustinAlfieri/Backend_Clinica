@@ -15,7 +15,6 @@ const messages: any = {
   message: 'API Clinica Medivia',
   endpoints: {
     Administrativos: '/app/v1/administrative',
-    Autenticación: '/app/v1/auth',
     'Especialidades Médicas': '/app/v1/medicalSpecialty',
     'Estados de turnos': '/app/v1/appointmentStatus',
     Medicos: '/app/v1/medic',
@@ -31,11 +30,19 @@ const messages: any = {
     Actualizar: '/update/:id',
     Crear: '/create',
     Eliminar: '/remove/:id'
+  },
+  'Otros endpoints': {
+    Autenticación: {
+      Login: '/app/v1/auth/login',
+      Registro: '/app/v1/auth/register'
+    },
+    // Ruta sin autenticación para el registro de los pacientes
+    // Solo devuelve id y name de las obras sociales.
+    'ID y nombre de las obras sociales': '/app/v1/medicalInsurance/findAllForRegister'
   }
 };
 
 export default (app: Application) => {
-  //Ruta para mostrar el contenido del JSON
   app.get('/', (req: Request, res: Response) => {
     res.json(messages);
   });
@@ -45,7 +52,7 @@ export default (app: Application) => {
   app.use('/app/v1/medic', routerMedic);
   app.use('/app/v1/medicalSpecialty', medicalSpecialtyRouter);
   app.use('/app/v1/typeAppointmentStatus', typeAppointmentStatusRouter);
-  app.use('/app/v1/appointmentStatus', appointmentStatusRouter); // Add this line to include the appointmentStatus routes
+  app.use('/app/v1/appointmentStatus', appointmentStatusRouter);
   app.use('/app/v1/administrative', administrativeRouter);
   app.use('/app/v1/practice', practiceRouter);
   app.use('/app/v1/medicalInsurance', medicalInsuranceRouter);
