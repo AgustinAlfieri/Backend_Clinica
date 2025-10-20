@@ -1,14 +1,38 @@
 import { orm } from '../shared/database/orm.js';
-import { NextFunction, Request, Response } from 'express';
+import { Request, Response } from 'express';
 import { AppointmentStatus } from './appointmentStatus.entity.js';
 import { AppError } from '../shared/errorManagment/appError.js';
 import { StatusCodes } from 'http-status-codes';
 import { TypeAppointmentStatus } from '../typeAppointmentStatus/typeAppointmentStatus.entity.js';
 import { logger } from '../shared/logger/logger.js';
+import { AppointmentStatusService } from './appointmentStatus.service.js';
+import { ResponseManager } from '../shared/helpers/responseHelper.js';
+import { resolveMessage } from '../shared/errorManagment/appError.js';
+import { request } from 'http';
 
 const em = orm.em;
 
 async function findAll(req: Request, res: Response) {
+  try {
+    const appointmentStatusService = new AppointmentStatusService(em);
+    const appointmentsStatus = await appointmentStatusService.findAll();
+
+    if (!appointmentsStatus) {
+      ResponseManager.notFound(res, 'No se encontraron estados de turno');
+      return;
+    }
+
+    ResponseManager.success(res, appointmentsStatus, 'Estados de turnos obtenidos', StatusCodes.OK);
+  } catch (error: any) {
+    logger.error(error);
+    const errorMessage = resolveMessage(error);
+    ResponseManager.error(
+      res,
+      errorMessage,
+      'Error al obtener los estados de turno',
+      StatusCodes.INTERNAL_SERVER_ERROR
+    );
+  }
   const appointmentStatus = await em.find(
     AppointmentStatus,
     {},
@@ -19,61 +43,82 @@ async function findAll(req: Request, res: Response) {
 }
 
 async function findOne(req: Request, res: Response) {
-  const id = req.params.id; // get the id from the request params
-  const appointmentStatus = await em.findOne(
-    AppointmentStatus,
-    { id },
-    { populate: ['appointment', 'typeAppointmentStatus'] }
-  );
-  if (!appointmentStatus) { res.status(StatusCodes.NOT_FOUND).send('Estado turno no encontrado'); return; } //not necessary return
-  res.status(StatusCodes.OK).send(appointmentStatus); // Send the appointmentStatus
-} // Find one appointmentStatus by id
+  try {
+    const id: string = req.params.id;
+    const appointmentStatusService = new AppointmentStatusService(em);
+    const appointmentStatus = await appointmentStatusService.findOne(id);
+
+    if (!appointmentStatus) {
+      ResponseManager.notFound(res, 'Estado de turno no encontrado');
+      return;
+    }
+
+    ResponseManager.success(res, appointmentStatus, 'Estado de turno encontrado', StatusCodes.OK);
+  } catch (error: any) {
+    logger.error(error);
+    const errorMessage = resolveMessage(error);
+    ResponseManager.error(res, errorMessage, 'Error al obtener el estado de turno', StatusCodes.INTERNAL_SERVER_ERROR);
+  }
+}
 
 async function create(req: Request, res: Response) {
   try {
-    const idTypeAppointmentStatus = req.body.sanitizedInput.idTypeAppointmentStatus;
-    const typeAppointmentStatus = await em.findOne(TypeAppointmentStatus, {
-      id: idTypeAppointmentStatus
-    });
+    const appointmentStatusService = new AppointmentStatusService(em);
+    const appointmentStatus = await appointmentStatusService.create(req.body);
 
-    console.log(typeAppointmentStatus);
-    if (!typeAppointmentStatus) throw new AppError('Type appointment status does not exist', StatusCodes.BAD_REQUEST);
-    const appointmentStatus = new AppointmentStatus(
-      new Date(),
-      req.body.sanitizedInput.idTypeAppointmentStatus,
-      req.body.sanitizedInput.appointment, // can be null or incomplete during development
-      req.body.sanitizedInput.observations
-    );
-    await em.persistAndFlush(appointmentStatus); // Persist the appointmentStatus
-    res.status(StatusCodes.CREATED).send(appointmentStatus);
-  } catch (error) {
-    if (!(error instanceof AppError)) {
-      logger.error(error);
-      throw new AppError('Error creating appointment status', StatusCodes.INTERNAL_SERVER_ERROR);
+    if (!appointmentStatus) {
+      ResponseManager.badRequest(res, 'No se pudo crear el estado de turno', '', StatusCodes.BAD_REQUEST);
+      return;
     }
-  } // Create a new appointmentStatus
-} // Create a new appointmentStatus
-async function update(req: Request, res: Response) {
-  const id = req.params.id; // get the id from the request params
-  try {
-    const appointmentStatus = await em.findOneOrFail(AppointmentStatus, { id });
-    em.assign(appointmentStatus, req.body.sanitizedInput); // The official documentation of MikroOrm says "assign(entity, data) assigns the values of data to entity in-place. It returns the same entity, so you don’t need to reassign it.  "
-    await em.flush();
-    res.status(StatusCodes.OK).send(appointmentStatus);
+
+    ResponseManager.success(res, appointmentStatus, 'Estado de turno creado', StatusCodes.CREATED);
   } catch (error) {
-    throw new AppError('Appointment status not found or inactive', StatusCodes.NOT_FOUND);
+    logger.error(error);
+
+    const errorMessage = resolveMessage(error);
+    ResponseManager.error(res, errorMessage, 'Error al crear el estado de turno', StatusCodes.INTERNAL_SERVER_ERROR);
   }
-} // Update a appointmentStatus by id
+}
+
+async function update(req: Request, res: Response) {
+  try {
+    const id: string = req.params.id;
+
+    const appointmentStatusService = new AppointmentStatusService(em);
+    const appointmentStatus = await appointmentStatusService.update(id, req.body);
+
+    ResponseManager.success(res, appointmentStatus, 'Estado de turno actualizado', StatusCodes.OK);
+  } catch (error) {
+    logger.error(error);
+
+    const errorMessage = resolveMessage(error);
+    ResponseManager.error(
+      res,
+      errorMessage,
+      'Error al actualizar el estado de turno',
+      StatusCodes.INTERNAL_SERVER_ERROR
+    );
+  }
+}
 
 async function remove(req: Request, res: Response) {
-  const id = req.params.id; // get the id from the request params
-  const appointmentStatus = await em.findOneOrFail(AppointmentStatus, {
-    id
-  });
-  if (!appointmentStatus) throw new AppError('Estado turno no encontrado', StatusCodes.NOT_FOUND); //not necessary return
-  await em.removeAndFlush(appointmentStatus); // remove the appointmentStatus
-  res.status(StatusCodes.ACCEPTED).send('Appointment status removed'); // Send a message
-} // Remove a appointmentStatus by id
+  try {
+    const id: string = req.params.id;
 
-export { findAll, findOne, create, update, remove};
-// export {findAll, findOne, create, update, remove} from "./appointmentStatus.controller.js";
+    const appointmentStatusService = new AppointmentStatusService(em);
+    const appointmentStatus = await appointmentStatusService.remove(id);
+
+    if (!appointmentStatus) {
+      ResponseManager.notFound(res, 'No se pudo eliminar el estado de turno');
+      return;
+    }
+
+    ResponseManager.success(res, null, 'Turno eliminado', StatusCodes.OK);
+  } catch (error) {
+    logger.error(error);
+
+    const errorMessage = resolveMessage(error);
+    ResponseManager.error(res, errorMessage, 'Error al eliminar el estado de turno', StatusCodes.INTERNAL_SERVER_ERROR);
+  }
+}
+export { findAll, findOne, create, update, remove };

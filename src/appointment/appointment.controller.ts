@@ -13,7 +13,7 @@ async function findAll(req: Request, res: Response) {
     const appointmentService = new AppointmentService(em);
     const appointments = await appointmentService.findAll();
 
-    if (!appointments){
+    if (!appointments) {
       ResponseManager.notFound(res, 'No se encontraron turnos');
       return;
     }
@@ -48,6 +48,8 @@ async function findOne(req: Request, res: Response) {
 }
 
 async function create(req: Request, res: Response) {
+  // TODO
+  // Ver si el primer estado de turno se tiene que crear desde el front o invocar acá
   try {
     const appointmentService = new AppointmentService(em);
     const appointment = await appointmentService.create(req.body);
@@ -60,7 +62,7 @@ async function create(req: Request, res: Response) {
     ResponseManager.success(res, appointment, 'Turno creado', StatusCodes.CREATED);
   } catch (error) {
     logger.error(error);
-    
+
     const errorMessage = resolveMessage(error);
     ResponseManager.error(res, errorMessage, 'Error al crear el turno', StatusCodes.INTERNAL_SERVER_ERROR);
   }
@@ -72,11 +74,6 @@ async function update(req: Request, res: Response) {
 
     const appointmentService = new AppointmentService(em);
     const appointment = await appointmentService.update(id, req.body);
-
-    if (!appointment) {
-      ResponseManager.badRequest(res, 'No se pudo actualizar el turno');
-      return;
-    }
 
     ResponseManager.success(res, appointment, 'Turno actualizado', StatusCodes.OK);
   } catch (error) {
@@ -102,7 +99,7 @@ async function remove(req: Request, res: Response) {
     ResponseManager.success(res, null, 'Turno eliminado', StatusCodes.OK);
   } catch (error) {
     logger.error(error);
-    
+
     const errorMessage = resolveMessage(error);
     ResponseManager.error(res, errorMessage, 'Error al eliminar el turno', StatusCodes.INTERNAL_SERVER_ERROR);
   }
