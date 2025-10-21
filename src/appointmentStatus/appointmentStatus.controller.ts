@@ -33,13 +33,6 @@ async function findAll(req: Request, res: Response) {
       StatusCodes.INTERNAL_SERVER_ERROR
     );
   }
-  const appointmentStatus = await em.find(
-    AppointmentStatus,
-    {},
-    { populate: ['appointment', 'typeAppointmentStatus'] }
-  );
-
-  res.status(StatusCodes.OK).send(appointmentStatus); // Aunque sea []
 }
 
 async function findOne(req: Request, res: Response) {

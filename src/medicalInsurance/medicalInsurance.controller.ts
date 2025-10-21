@@ -1,5 +1,5 @@
 import { orm } from '../shared/database/orm.js';
-import { NextFunction, Request, Response } from 'express';
+import { Request, Response } from 'express';
 import { MedicalInsurance } from './medicalInsurance.entity.js';
 import { AppError, resolveMessage } from '../shared/errorManagment/appError.js';
 import { StatusCodes } from 'http-status-codes';
@@ -33,51 +33,96 @@ async function findAllForRegister(req: Request, res: Response) {
 }
 
 async function findAll(req: Request, res: Response) {
-  const medicalInsurances = await em.find(MedicalInsurance, {}, { populate: ['practices', 'patients'] });
+  try {
+    const medicalInsuranceService = new MedicalInsuranceService(em);
+    const medicalInsurance = await medicalInsuranceService.findAll();
 
-  if (!medicalInsurances) throw new AppError('Obras Sociales no encontradas', StatusCodes.NOT_FOUND);
+    if (!medicalInsurance) {
+      ResponseManager.notFound(res, 'No se encontraron obras sociales');
+      return;
+    }
 
-  res.status(StatusCodes.OK).send(medicalInsurances);
+    ResponseManager.success(res, medicalInsurance, 'Obras sociales obtenidas', StatusCodes.OK);
+  } catch (error: any) {
+    logger.error(error);
+    const errorMessage = resolveMessage(error);
+    ResponseManager.error(res, errorMessage, 'Error al obtener obras sociales', StatusCodes.INTERNAL_SERVER_ERROR);
+  }
 }
 
 async function findOne(req: Request, res: Response) {
-  const id = req.params.id;
-  const medicalInsurance = await em.findOne(MedicalInsurance, id, {
-    populate: ['practices', 'patients']
-  });
+  try {
+    const id: string = req.params.id;
+    const medicalInsuranceService = new MedicalInsuranceService(em);
+    const medicalInsurance = await medicalInsuranceService.findOne(id);
 
-  if (!medicalInsurance) throw new AppError('Obra Social no encontrada', StatusCodes.NOT_FOUND);
+    if (!medicalInsurance) {
+      ResponseManager.notFound(res, 'Obra social no encontrada');
+      return;
+    }
 
-  res.status(StatusCodes.OK).send(medicalInsurance);
+    ResponseManager.success(res, medicalInsurance, 'Obra social encontrada', StatusCodes.OK);
+  } catch (error: any) {
+    logger.error(error);
+    const errorMessage = resolveMessage(error);
+    ResponseManager.error(res, errorMessage, 'Error al obtener Obra social', StatusCodes.INTERNAL_SERVER_ERROR);
+  }
 }
 
 async function update(req: Request, res: Response) {
-  const id = req.params.id;
-  const medicalInsurance = await em.findOneOrFail(MedicalInsurance, id, { populate: ['practices', 'patients'] });
+  try {
+    const id: string = req.params.id;
 
-  const medicalInsuranceUpdated = em.assign(medicalInsurance, req.body.sanitizedInput);
+    const medicalInsuranceService = new MedicalInsuranceService(em);
+    const medicalInsurance = await medicalInsuranceService.update(id, req.body);
 
-  if (!medicalInsuranceUpdated) throw new AppError('Error al modificar la obra social', StatusCodes.NOT_MODIFIED);
+    ResponseManager.success(res, medicalInsurance, 'Obra social actualizada', StatusCodes.OK);
+  } catch (error) {
+    logger.error(error);
 
-  await em.flush();
-
-  res.status(StatusCodes.OK).send(medicalInsuranceUpdated);
+    const errorMessage = resolveMessage(error);
+    ResponseManager.error(res, errorMessage, 'Error al actualizar obra social', StatusCodes.INTERNAL_SERVER_ERROR);
+  }
 }
 
 async function create(req: Request, res: Response) {
-  const medicalInsurance = em.create(MedicalInsurance, req.body.sanitizedInput);
-  await em.flush();
-  if (!medicalInsurance) throw new AppError('Error al crear la obra social', StatusCodes.INTERNAL_SERVER_ERROR);
-  res.status(StatusCodes.CREATED).send(medicalInsurance);
+  try {
+    const medicalInsuranceService = new MedicalInsuranceService(em);
+    const medicalInsurance = await medicalInsuranceService.create(req.body);
+
+    if (!medicalInsurance) {
+      ResponseManager.badRequest(res, 'No se pudo crear la obra social', '', StatusCodes.BAD_REQUEST);
+      return;
+    }
+
+    ResponseManager.success(res, medicalInsurance, 'Obra social creada', StatusCodes.CREATED);
+  } catch (error) {
+    logger.error(error);
+
+    const errorMessage = resolveMessage(error);
+    ResponseManager.error(res, errorMessage, 'Error al crear obra social', StatusCodes.INTERNAL_SERVER_ERROR);
+  }
 }
 
 async function remove(req: Request, res: Response) {
-  const id = req.params.id;
-  const deleteMedicalInsurance = em.getReference(MedicalInsurance, id);
+  try {
+    const id: string = req.params.id;
 
-  await em.removeAndFlush(deleteMedicalInsurance);
+    const medicalInsuranceService = new MedicalInsuranceService(em);
+    const medicalInsurance = await medicalInsuranceService.remove(id);
 
-  res.status(StatusCodes.ACCEPTED).send('Especialidad médica eliminada');
+    if (!medicalInsurance) {
+      ResponseManager.notFound(res, 'No se pudo eliminar la obra social');
+      return;
+    }
+
+    ResponseManager.success(res, null, 'Obra social eliminada', StatusCodes.OK);
+  } catch (error) {
+    logger.error(error);
+
+    const errorMessage = resolveMessage(error);
+    ResponseManager.error(res, errorMessage, 'Error al eliminar la obra social', StatusCodes.INTERNAL_SERVER_ERROR);
+  }
 }
 
 export { findAllForRegister, findAll, findOne, update, create, remove };
