@@ -1,10 +1,17 @@
 import { Router } from 'express';
-import { findOne, findAll, remove, create, update } from './appointment.controller.js';
+import { findAppointmentByFilter, findOne, findAll, remove, create, update } from './appointment.controller.js';
 import { authMiddleware } from '../shared/middlewares/auth.middleware.js';
 import { validateInput } from '../shared/middlewares/validateInput.js';
-import { appointmentSchema } from '../shared/schemas/appointmentRelatedSchemas.js';
+import { appointmentFilters, appointmentSchema } from '../shared/schemas/appointmentRelatedSchemas.js';
 
 export const appointmentRouter = Router();
+
+appointmentRouter.get(
+  '/findAppointmentByFilter',
+  //authMiddleware('Appointment', 'view'),
+  //validateInput({ location: 'body', schema: appointmentFilters }),
+  findAppointmentByFilter
+);
 
 appointmentRouter.get(
   '/findAll',

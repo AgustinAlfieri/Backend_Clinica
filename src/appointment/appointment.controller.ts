@@ -8,6 +8,29 @@ import { resolveMessage } from '../shared/errorManagment/appError.js';
 
 const em = orm.em.fork();
 
+// Ejemplo Query
+// GET http://localhost:3000/app/v1/appointment/findAppointmentByFilter?beforeDate=2026-01-16T09:30&afterDate=2026-01-12T09:30
+
+//De momento solo filtra por beforeDate y afterDate
+async function findAppointmentByFilter(req: Request, res: Response) {
+  try {
+    const appointmentService = new AppointmentService(em);
+    const appointments = await appointmentService.findAppointmentByFilter(req.query);
+
+    if (!appointments) {
+      ResponseManager.notFound(res, 'No se encontraron turnos');
+      return;
+    }
+
+    ResponseManager.success(res, appointments, 'Turnos obtenidos', StatusCodes.OK);
+  } catch (error) {
+    logger.error(error);
+
+    const errorMessage = resolveMessage(error);
+    ResponseManager.error(res, errorMessage, 'Error al obtener los turnos', StatusCodes.INTERNAL_SERVER_ERROR);
+  }
+}
+
 async function findAll(req: Request, res: Response) {
   try {
     const appointmentService = new AppointmentService(em);
@@ -105,4 +128,4 @@ async function remove(req: Request, res: Response) {
   }
 }
 
-export { findAll, findOne, create, update, remove };
+export { findAppointmentByFilter, findAll, findOne, create, update, remove };

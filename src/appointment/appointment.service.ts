@@ -1,4 +1,4 @@
-import { EntityManager } from '@mikro-orm/mysql';
+import { FilterQuery, FindOptions, EntityManager } from '@mikro-orm/mysql';
 import { Appointment } from './appointment.entity.js';
 import { Practice } from '../practice/practice.entity.js';
 import { Patient } from '../user/userTypes/patient/patient.entity.js';
@@ -15,8 +15,91 @@ export interface AppointmentData {
   practiceIds?: string[];
 }
 
+export interface FilterParams {
+  beforeDate?: Date;
+  afterDate?: Date;
+  appointmentStatus?: string;
+  patientDni?: string;
+}
+
 export class AppointmentService {
   constructor(private em: EntityManager) {}
+
+  findAppointmentByFilter(filter: FilterParams) {
+    try {
+      const _em = this.em.fork();
+      const findOptions = this.buildAppointmentFilter(filter);
+      // Using the find method with the generated options
+      const appointments = _em.find(Appointment, findOptions.where);
+      return appointments;
+    } catch (error: any) {
+      logger.error('Error al encontrar turnos filtrados por fecha', error);
+
+      throw `Fallo al encontrar turnos filtrados por fecha: ${resolveMessage(error)}`;
+    }
+  }
+
+  //Método del AppoinmentService para construir la Query con filtros
+  private buildAppointmentFilter(filter: FilterParams) {
+    const { beforeDate, afterDate } = filter;
+
+    const filters: FilterParams = {
+      // ⚠️ Importante: Convertir la cadena (string) a objeto Date
+      beforeDate: beforeDate ? new Date(beforeDate) : undefined,
+      afterDate: afterDate ? new Date(afterDate) : undefined
+    };
+
+    // Initialize the base where clause
+    const where: FilterQuery<Appointment> = {};
+
+    // 1. Date Range Filtering
+    if (beforeDate || afterDate) {
+      where.appointmentDate = {};
+      if (beforeDate) {
+        // Less than or equal to beforeDate
+        where.appointmentDate.$lte = beforeDate;
+      }
+      if (afterDate) {
+        // Greater than or equal to afterDate
+        where.appointmentDate.$gte = afterDate;
+      }
+    }
+
+    // 2. Patient DNI Filtering
+    //if (patientDni) {
+    // Nested filtering for the related 'patient' entity's 'dni' property
+    // Assumes the Patient entity has a 'dni' property
+    //where.patient = { dni: patientDni };
+    //}
+
+    // 3. Appointment Status Filtering
+    //if (appointmentStatus) {
+    // Nested filtering for the related 'appointmentsStatus' collection.
+    // This finds appointments that have *at least one* associated AppointmentStatus
+    // entity whose 'statusName' property matches the filter.
+    // Assumes the AppointmentStatus entity has a 'statusName' property
+    //where.appointmentsStatus = { appointmentsStatus: appointmentStatus };
+    //}
+
+    // Define necessary population for the query
+    //const populate: FindOptions<Appointment>['populate'] = [
+    // Populate patient if dni filter is used, or if you generally want it
+    //  'patient'
+    // Populate appointmentsStatus if status filter is used, or if you generally want it
+    //'appointmentsStatus'
+    //];
+
+    // Note on MySQL joins: MikroORM automatically uses joins for nested 'where' clauses.
+    // The 'populate' array mainly ensures these fields are fetched if needed, but the 'where'
+    // clause structure (e.g., `where.patient = { ... }`) is what tells MikroORM to perform the join for filtering.
+
+    return {
+      where
+      // Add populate if you want the related entities to be returned in the results
+      // You might remove this if you only need the filtering to happen.
+      //populate: populate as any
+    };
+  }
 
   async findAll() {
     const _em = this.em.fork();
