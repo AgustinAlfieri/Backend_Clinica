@@ -9,7 +9,7 @@ export const appointmentRouter = Router();
 appointmentRouter.get(
   '/findAppointmentByFilter',
   //authMiddleware('Appointment', 'view'),
-  //validateInput({ location: 'body', schema: appointmentFilters }),
+  validateInput({ location: 'body', schema: appointmentFilters }),
   findAppointmentByFilter
 );
 

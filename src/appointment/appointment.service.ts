@@ -28,8 +28,9 @@ export class AppointmentService {
   findAppointmentByFilter(filter: FilterParams) {
     try {
       const _em = this.em.fork();
+      //Llamo a la construccion del where usando los parámetros de la query
       const findOptions = this.buildAppointmentFilter(filter);
-      // Using the find method with the generated options
+      //Find con where
       const appointments = _em.find(Appointment, findOptions.where);
       return appointments;
     } catch (error: any) {
@@ -39,65 +40,35 @@ export class AppointmentService {
     }
   }
 
-  //Método del AppoinmentService para construir la Query con filtros
+  //Método del AppoinmentService para construir el where del find con filtro
   private buildAppointmentFilter(filter: FilterParams) {
-    const { beforeDate, afterDate } = filter;
+    const { beforeDate, afterDate, patientDni } = filter;
 
     const filters: FilterParams = {
-      // ⚠️ Importante: Convertir la cadena (string) a objeto Date
+      //Se convierte la fecha de tipo string a  Date
       beforeDate: beforeDate ? new Date(beforeDate) : undefined,
       afterDate: afterDate ? new Date(afterDate) : undefined
     };
-
-    // Initialize the base where clause
     const where: FilterQuery<Appointment> = {};
 
-    // 1. Date Range Filtering
+    //Filtro por rango de fechas
     if (beforeDate || afterDate) {
       where.appointmentDate = {};
       if (beforeDate) {
-        // Less than or equal to beforeDate
         where.appointmentDate.$lte = beforeDate;
       }
       if (afterDate) {
-        // Greater than or equal to afterDate
         where.appointmentDate.$gte = afterDate;
       }
     }
 
-    // 2. Patient DNI Filtering
-    //if (patientDni) {
-    // Nested filtering for the related 'patient' entity's 'dni' property
-    // Assumes the Patient entity has a 'dni' property
-    //where.patient = { dni: patientDni };
-    //}
-
-    // 3. Appointment Status Filtering
-    //if (appointmentStatus) {
-    // Nested filtering for the related 'appointmentsStatus' collection.
-    // This finds appointments that have *at least one* associated AppointmentStatus
-    // entity whose 'statusName' property matches the filter.
-    // Assumes the AppointmentStatus entity has a 'statusName' property
-    //where.appointmentsStatus = { appointmentsStatus: appointmentStatus };
-    //}
-
-    // Define necessary population for the query
-    //const populate: FindOptions<Appointment>['populate'] = [
-    // Populate patient if dni filter is used, or if you generally want it
-    //  'patient'
-    // Populate appointmentsStatus if status filter is used, or if you generally want it
-    //'appointmentsStatus'
-    //];
-
-    // Note on MySQL joins: MikroORM automatically uses joins for nested 'where' clauses.
-    // The 'populate' array mainly ensures these fields are fetched if needed, but the 'where'
-    // clause structure (e.g., `where.patient = { ... }`) is what tells MikroORM to perform the join for filtering.
+    //Filtro por DNI de paciente
+    if (patientDni) {
+      where.patient = { dni: patientDni };
+    }
 
     return {
       where
-      // Add populate if you want the related entities to be returned in the results
-      // You might remove this if you only need the filtering to happen.
-      //populate: populate as any
     };
   }
 
