@@ -18,58 +18,53 @@ export interface AppointmentData {
 export interface FilterParams {
   beforeDate?: Date;
   afterDate?: Date;
-  appointmentStatus?: string;
+  typeAppointmentStatus?: string;
   patientDni?: string;
 }
 
 export class AppointmentService {
   constructor(private em: EntityManager) {}
-
-  findAppointmentByFilter(filter: FilterParams) {
+  async findAppointmentByFilter(filter: FilterParams): Promise<Appointment[]> {
     try {
       const _em = this.em.fork();
-      //Llamo a la construccion del where usando los parámetros de la query
-      const findOptions = this.buildAppointmentFilter(filter);
-      //Find con where
-      const appointments = _em.find(Appointment, findOptions.where);
-      return appointments;
-    } catch (error: any) {
-      logger.error('Error al encontrar turnos filtrados por fecha', error);
 
-      throw `Fallo al encontrar turnos filtrados por fecha: ${resolveMessage(error)}`;
-    }
-  }
+      const { beforeDate, afterDate, patientDni, typeAppointmentStatus } = filter;
 
-  //Método del AppoinmentService para construir el where del find con filtro
-  private buildAppointmentFilter(filter: FilterParams) {
-    const { beforeDate, afterDate, patientDni } = filter;
+      //Inicializo el QueryBuilder
+      const qb = _em.createQueryBuilder(Appointment, 'a');
 
-    const filters: FilterParams = {
-      //Se convierte la fecha de tipo string a  Date
-      beforeDate: beforeDate ? new Date(beforeDate) : undefined,
-      afterDate: afterDate ? new Date(afterDate) : undefined
-    };
-    const where: FilterQuery<Appointment> = {};
+      // Defino los datos que quiero (Quizas hay que traer menos)
+      qb.select('a.*').distinct();
+      qb.leftJoinAndSelect('a.patient', 'p');
+      qb.leftJoinAndSelect('a.medic', 'm');
 
-    //Filtro por rango de fechas
-    if (beforeDate || afterDate) {
-      where.appointmentDate = {};
+      //Filtro por fechas
       if (beforeDate) {
-        where.appointmentDate.$lte = beforeDate;
+        qb.andWhere({ appointmentDate: { $lte: new Date(beforeDate) } });
       }
       if (afterDate) {
-        where.appointmentDate.$gte = afterDate;
+        qb.andWhere({ appointmentDate: { $gte: new Date(afterDate) } });
       }
-    }
 
-    //Filtro por DNI de paciente
-    if (patientDni) {
-      where.patient = { dni: patientDni };
-    }
+      //Filtro por DNI del paciente (No hace falta el join porque ya lo hago en los select)
+      if (patientDni) {
+        qb.andWhere({ 'p.dni': patientDni });
+      }
 
-    return {
-      where
-    };
+      //Joins para tener el nombre del tipo de estado de turno
+      if (typeAppointmentStatus) {
+        // Join Appointment -> AppointmentStatus -> TypeAppointmentStatus
+        qb.join('a.appointmentsStatus', 'as').join('as.typeAppointmentStatus', 'tas');
+        //Busco por el nombre del tipo de estado (Ej: Solicitado)
+        qb.andWhere({ 'tas.name': typeAppointmentStatus });
+      }
+
+      //Ejecuto la query y traigo los resultados
+      return await qb.getResultList();
+    } catch (error: any) {
+      logger.error('Error al filtrar los turnos', error);
+      throw `Error al filtrar los turnos: ${resolveMessage(error)}`;
+    }
   }
 
   async findAll() {
