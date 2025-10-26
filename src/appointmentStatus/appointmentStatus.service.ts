@@ -7,8 +7,8 @@ import { resolveMessage } from '../shared/errorManagment/appError.js';
 
 export interface AppointmentStatusData {
   appointment: string;
-  appointmentStatusDate?: Date;
-  observations?: string;
+  date?: Date;  // Cambiado de appointmentStatusDate a date para coincidir con el schema
+  observation?: string;  // Cambiado de observations a observation
   typeAppointmentStatus: string;
 }
 
@@ -29,6 +29,15 @@ export class AppointmentStatusService {
     try {
       const _em = this.em.fork();
 
+      // DEBUG: Ver qué recibe el servicio
+      console.log('=== APPOINTMENT STATUS SERVICE DEBUG ===');
+      console.log('data completo:', JSON.stringify(data, null, 2));
+      console.log('data.appointment:', data.appointment);
+      console.log('data.typeAppointmentStatus:', data.typeAppointmentStatus);
+      console.log('data.date:', data.date);
+      console.log('data.observation:', data.observation);
+      console.log('========================================');
+
       if (!data.appointment || !data.typeAppointmentStatus) {
         throw new Error('Turno y Tipo de estado de turno son obligatorios');
       }
@@ -39,10 +48,10 @@ export class AppointmentStatusService {
       const tas = _em.getReference(TypeAppointmentStatus, data.typeAppointmentStatus);
 
       const newAppointmentStatus = _em.create(AppointmentStatus, {
-        date: data.appointmentStatusDate || new Date(),
+        date: data.date || new Date(),
         appointment: newappointment,
         typeAppointmentStatus: tas,
-        observation: data.observations || ''
+        observation: data.observation || ''
       });
       await _em.persistAndFlush(newAppointmentStatus);
       return newAppointmentStatus;
