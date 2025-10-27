@@ -9,8 +9,8 @@ import { resolveMessage } from '../shared/errorManagment/appError.js';
 
 export interface AppointmentData {
   date: Date;
-  patientId: string;
-  medicId: string;
+  patient: string;
+  medic: string;
   administrativeIds?: string[];
   practiceIds?: string[];
 }
@@ -27,6 +27,8 @@ export class AppointmentService {
   async findAppointmentByFilter(filter: FilterParams): Promise<Appointment[]> {
     try {
       const _em = this.em.fork();
+
+      console.log('filter recibido en service:', JSON.stringify(filter, null, 2));
 
       const { beforeDate, afterDate, patientDni, typeAppointmentStatus } = filter;
 
@@ -92,21 +94,21 @@ export class AppointmentService {
       // DEBUG: Log completo de lo que recibe el servicio
       console.log('=== APPOINTMENT SERVICE DEBUG ===');
       console.log('data completo:', JSON.stringify(data, null, 2));
-      console.log('data.patientId:', data.patientId);
-      console.log('data.medicId:', data.medicId);
+      console.log('data.patientId:', data.patient);
+      console.log('data.medicId:', data.medic);
       console.log('data.date:', data.date);
       console.log('typeof data:', typeof data);
       console.log('keys de data:', Object.keys(data));
       console.log('================================');
 
-      if (!data.patientId || !data.medicId) {
+      if (!data.patient || !data.medic) {
         throw new Error('Paciente y médico son obligatorios');
       }
 
       //Utilizamos getReference para traer una referencia al objeto en lugar de todo el objeto.
       //Queda la duda si para los arreglos no habría que reemplazar los findOne por esto
-      const patient = _em.getReference(Patient, data.patientId);
-      const medic = _em.getReference(Medic, data.medicId);
+      const patient = _em.getReference(Patient, data.patient);
+      const medic = _em.getReference(Medic, data.medic);
 
       const newAppointment = _em.create(Appointment, {
         appointmentDate: data.date || new Date(),
@@ -146,8 +148,8 @@ export class AppointmentService {
 
       const updateData: any = {};
       if (data.date) updateData.appointmentDate = data.date;
-      if (data.patientId) updateData.patient = _em.getReference(Patient, data.patientId);
-      if (data.medicId) updateData.medic = _em.getReference(Medic, data.medicId);
+      if (data.patient) updateData.patient = _em.getReference(Patient, data.patient);
+      if (data.medic) updateData.medic = _em.getReference(Medic, data.medic);
 
       _em.nativeUpdate(Appointment, { id }, updateData);
     } catch (error: any) {

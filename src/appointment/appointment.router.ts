@@ -25,9 +25,8 @@ appointmentRouter.get(
   validateInput({ location: 'body', schema: appointmentSchema }),
   findOne
 );
-appointmentRouter.post(
-  '/create',
-  authMiddleware('Appointment', 'create'),
+appointmentRouter.post('/create',
+  //authMiddleware('Appointment', 'create'),
   validateInput({ location: 'body', schema: appointmentSchema }),
   create
 );
