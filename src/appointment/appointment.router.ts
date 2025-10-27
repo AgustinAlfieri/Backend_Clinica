@@ -8,7 +8,7 @@ export const appointmentRouter = Router();
 
 appointmentRouter.get(
   '/findAppointmentByFilter',
-  //authMiddleware('Appointment', 'view'),
+  authMiddleware('Appointment', 'view'),
   validateInput({ location: 'body', schema: appointmentFilters }),
   findAppointmentByFilter
 );
@@ -25,8 +25,9 @@ appointmentRouter.get(
   validateInput({ location: 'body', schema: appointmentSchema }),
   findOne
 );
-appointmentRouter.post('/create',
-  //authMiddleware('Appointment', 'create'),
+appointmentRouter.post(
+  '/create',
+  authMiddleware('Appointment', 'create'),
   validateInput({ location: 'body', schema: appointmentSchema }),
   create
 );
