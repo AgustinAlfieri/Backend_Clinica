@@ -5,21 +5,25 @@ Sistema backend para gestión de clínica médica desarrollado con Node.js, Type
 ## 🚀 Tecnologías Utilizadas
 
 ### Core
+
 - **Node.js** - Runtime de JavaScript
 - **TypeScript 5.1.3** - Superset tipado de JavaScript
 - **Express 5.1.0** - Framework web para Node.js
 
 ### Base de Datos
+
 - **MikroORM 6.4.15** - ORM para TypeScript
 - **MySQL (Percona Server)** - Sistema de gestión de base de datos
 - **Docker** - Contenerización de la base de datos
 
 ### Autenticación y Seguridad
+
 - **JWT (jsonwebtoken)** - Autenticación basada en tokens
 - **bcrypt/bcryptjs** - Encriptación de contraseñas
 - **Joi** - Validación de esquemas
 
 ### Utilidades
+
 - **Winston** - Logging
 - **Cors** - Manejo de CORS
 - **dotenv** - Variables de entorno
@@ -27,6 +31,7 @@ Sistema backend para gestión de clínica médica desarrollado con Node.js, Type
 - **nanoid** - Generación de IDs únicos
 
 ### Desarrollo
+
 - **tsc-watch** - Compilador TypeScript con watch mode
 - **nodemon** - Reinicio automático del servidor
 
@@ -35,12 +40,14 @@ Sistema backend para gestión de clínica médica desarrollado con Node.js, Type
 ## 📥 Descargar el Proyecto
 
 ### Opción 1: Clonar con Git
+
 ```bash
 git clone https://github.com/AgustinAlfieri/Backend_Clinica.git
 cd Backend_Clinica
 ```
 
 ### Opción 2: Descargar ZIP
+
 1. Ir a: https://github.com/AgustinAlfieri/Backend_Clinica
 2. Click en "Code" → "Download ZIP"
 3. Extraer el archivo y navegar a la carpeta
@@ -50,16 +57,19 @@ cd Backend_Clinica
 ## 📦 Instalación de Dependencias
 
 ### Pre-requisitos
+
 - **Node.js** (v22 o superior recomendado)
 - **pnpm** (v10.8.0 o superior)
 - **Docker** (para la base de datos)
 
 ### Instalar pnpm (si no lo tienes)
+
 ```bash
 npm install -g pnpm
 ```
 
 ### Instalar todas las dependencias
+
 Desde el directorio raíz del proyecto:
 
 ```bash
@@ -77,16 +87,19 @@ El proyecto requiere dos archivos de configuración:
 ### 1. Configuración de Base de Datos
 
 Copiar el archivo de ejemplo:
+
 ```bash
 cp .env.database.example .env.database
 ```
 
 En Windows (PowerShell):
+
 ```powershell
 Copy-Item .env.database.example .env.database
 ```
 
 Editar `.env.database` con tus credenciales:
+
 ```env
 DB_HOST=localhost
 DB_PORT=3306
@@ -98,16 +111,19 @@ DB_NAME=clinica
 ### 2. Configuración de la Aplicación
 
 Copiar el archivo de ejemplo:
+
 ```bash
 cp .env.configuration.example .env.configuration
 ```
 
 En Windows (PowerShell):
+
 ```powershell
 Copy-Item .env.configuration.example .env.configuration
 ```
 
 Editar `.env.configuration` con tu clave secreta:
+
 ```env
 SECRET=tu_clave_secreta_para_jwt_aqui
 ```
@@ -121,6 +137,7 @@ SECRET=tu_clave_secreta_para_jwt_aqui
 Crear y ejecutar un contenedor MySQL con Percona Server:
 
 ### Linux/Mac:
+
 ```bash
 docker run --name db_clinica_mysql \
   -v /ruta/a/tu/carpeta:/var/lib/mysql \
@@ -134,24 +151,54 @@ docker run --name db_clinica_mysql \
 ```
 
 ### Windows (PowerShell):
+
 ```powershell
 docker run --name db_clinica_mysql -v C:\Users\TuUsuario\Escritorio\db_data:/var/lib/mysql -e MYSQL_ROOT_HOST='%' -e MYSQL_ALLOW_EMPTY_PASSWORD="yes" -e MYSQL_PASSWORD="contraseña_db" -e MYSQL_USER="usuario_db" -e MYSQL_DATABASE='clinica' -p 3306:3306 -d percona/percona-server
 ```
 
 ### Verificar que el contenedor está corriendo:
+
 ```bash
 docker ps
 ```
 
 ### Iniciar un contenedor existente:
+
 ```bash
 docker start db_clinica_mysql
 ```
 
 ### Detener el contenedor:
+
 ```bash
 docker stop db_clinica_mysql
 ```
+
+## 🌱 Carga de Datos de Prueba (Seeding)
+
+Para facilitar las pruebas, el proyecto incluye un archivo SQL con datos de ejemplo (pacientes, médicos, tipos de estado, etc.).
+
+El archivo se encuentra en `docs/mock-data.sql`.
+
+### Opción 1: Cargar desde la terminal (con Docker)
+
+Asegúrate de que tu contenedor `db_clinica_mysql` esté corriendo. Luego, ejecuta este comando desde la raíz del proyecto, reemplazando `usuario_db` y `contraseña_db` con tus credenciales de `.env.database`:
+
+```bash
+docker exec -i db_clinica_mysql mysql -u<usuario_db> -p<contraseña_db> clinica < docs/mock-data.sql
+```
+
+> Nota: Si tu contraseña contiene caracteres especiales, es posible que necesites ejecutar el comando de forma interactiva: docker exec -i db_clinica_mysql mysql -uusuario_db -p clinica < seed/data.sql y luego ingresar la contraseña cuando se te solicite.
+
+### Opción 2: Usando un cliente GUI (DBeaver, Workbench)
+
+- Abre tu cliente de base de datos (DBeaver, MySQL Workbench, etc.).
+
+- Conéctate a tu base de datos clinica que corre en Docker.
+
+- Abre el archivo docs/mock-data.sql en el editor de SQL.
+
+- Ejecuta todo el contenido del script.
 
 ---
 
@@ -160,36 +207,47 @@ docker stop db_clinica_mysql
 ### Scripts de package.json:
 
 #### 🔧 Desarrollo (Recomendado)
+
 Compila TypeScript y reinicia automáticamente al detectar cambios:
+
 ```bash
 pnpm start:dev
 ```
 
 #### 📦 Compilar el proyecto
+
 Compila TypeScript a JavaScript en la carpeta `dist/`:
+
 ```bash
 pnpm build
 ```
 
 #### 🚀 Producción
+
 Ejecuta el código compilado (requiere `pnpm build` primero):
+
 ```bash
 pnpm start
 ```
 
 #### 🐛 Debug con Nodemon
+
 Ejecuta el proyecto compilado con nodemon:
+
 ```bash
 pnpm start:debug
 ```
 
 #### ⚡ Desarrollo alternativo con ts-node-dev
+
 ```bash
 pnpm dev
 ```
 
 #### 🔍 Debug con Inspector de Node.js
+
 Para debugging con breakpoints:
+
 ```bash
 pnpm debug
 ```
@@ -205,6 +263,7 @@ http://localhost:3000
 ```
 
 ### Endpoints principales:
+
 - **Health Check**: `GET http://localhost:3000/`
 - **Appointment**: `http://localhost:3000/api/appointment/*`
 - **Appointment Status**: `http://localhost:3000/api/appointmentStatus/*`
@@ -217,6 +276,7 @@ http://localhost:3000
 - **Patient**: `http://localhost:3000/api/patient/*`
 
 ### Ver logs
+
 Los logs se guardan en el archivo `app.log` en la raíz del proyecto.
 
 ---
@@ -235,36 +295,22 @@ Los logs se guardan en el archivo `app.log` en la raíz del proyecto.
 ## 🛠️ Solución de Problemas
 
 ### Error de conexión a la base de datos
+
 - Verificar que el contenedor Docker esté corriendo: `docker ps`
 - Verificar que las credenciales en `.env.database` coincidan con las del contenedor
 - Verificar que el puerto 3306 no esté ocupado
 
 ### Error en compilación TypeScript
+
 - Verificar que tienes Node.js v22+
 - Limpiar y reinstalar: `rm -rf node_modules dist && pnpm install`
 
 ### Puerto 3000 ocupado
+
 - Cambiar el puerto en el código o detener el proceso que lo está usando
 
 ### El contenedor Docker no inicia
+
 - Verificar que Docker esté corriendo
 - Verificar que no haya otro contenedor usando el puerto 3306
 - Ver logs del contenedor: `docker logs db_clinica_mysql`
-
----
-
-## 📚 Documentación Adicional
-
-Para más información sobre comandos útiles, ver: `docs/comandos_utiles.md`
-
----
-
-## 👥 Contribución
-
-Este es un proyecto académico/privado. Para contribuir, contactar al propietario del repositorio.
-
----
-
-## 📄 Licencia
-
-ISC
