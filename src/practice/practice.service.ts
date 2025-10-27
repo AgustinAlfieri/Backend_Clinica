@@ -4,6 +4,7 @@ import { MedicalSpecialty } from '../medicalSpecialty/medicalSpecialty.entity.js
 import { MedicalInsurance } from '../medicalInsurance/medicalInsurance.entity.js';
 import { Appointment } from '../appointment/appointment.entity.js';
 import { Collection } from '@mikro-orm/core';
+import { logger } from '../shared/logger/logger.js';
 
 interface PracticeDTO {
   name: string;
@@ -14,114 +15,78 @@ interface PracticeDTO {
 }
 
 export class PracticeService {
-  constructor(private _em: EntityManager) {}
+  constructor(private em: EntityManager) {}
 
   async findAll() {
-    const _em = this._em.fork();
+    const _em = this.em.fork();
     return await _em.find(Practice, {}, { populate: ['medicalSpecialty', 'medicalInsurances', 'appointments'] });
   }
 
   async findOne(id: string) {
-    const _em = this._em.fork();
+    const _em = this.em.fork();
     return await _em.findOne(Practice, id, { populate: ['medicalSpecialty', 'medicalInsurances', 'appointments'] });
   }
 
-  async create(practiceData: PracticeDTO) {
-    const _em = this._em.fork();
+  async create(practice: PracticeDTO): Promise<Practice> {
+    try {
+      //Validaciones basicas
+      if (!practice.name) throw new Error('Debe ingresar el nombre de la práctica');
 
-    const medicalSpeciality = await _em.findOneOrFail(MedicalSpecialty, practiceData.medicalSpecialty);
-    if (!medicalSpeciality) {
-      throw new Error('No se encontró la especialidad médica');
-    }
+      const _em = this.em.fork();
+      //Creo el paciente
+      const newPractice = await _em.create(Practice, {
+        name: practice.name,
+        description: practice.description,
+        medicalSpecialty: practice.medicalSpecialty
+      });
 
-    //new instance of Practice
-    const practice = new Practice(practiceData.name, medicalSpeciality, practiceData.description);
+      //Si viene con obras sociales, las buscos y asigno
+      if (practice.medicalInsurances) {
+        const medicalInsurances = new Collection<MedicalInsurance>(newPractice);
+        for (const medicalInsuranceId of practice.medicalInsurances) {
+          const medicalInsurance = await _em.findOne(MedicalInsurance, medicalInsuranceId);
 
-    practice.medicalInsurances = new Collection<MedicalInsurance>(practice);
-    if (practiceData.medicalInsurances && practiceData.medicalInsurances.length > 0) {
-      for (const mi of practiceData.medicalInsurances) {
-        const id = mi.id;
-        const insurance = await _em.findOne(MedicalInsurance, id || '-1');
-        if (!insurance) {
-          throw new Error(`No se encontró el seguro médico con ID ${id}`);
+          if (!medicalInsurance) throw new Error(`La obra social con id ${medicalInsuranceId} no existe`);
+          else medicalInsurances.add(medicalInsurance);
         }
-        practice.medicalInsurances.add(insurance);
+        newPractice.medicalInsurances = medicalInsurances;
       }
-    }
 
-    practice.appointments = new Collection<Appointment>(practice);
-    if (practiceData.appointments && practiceData.appointments.length > 0) {
-      for (const app of practiceData.appointments) {
-        const id = app.id;
-        const appointment = await _em.findOne(Appointment, id || '-1');
-        if (!appointment) {
-          throw new Error(`No se encontró la cita con ID ${id}`);
+      //Si viene con turnos, los busco y asigno
+      if (practice.appointments) {
+        const appointments = new Collection<Appointment>(newPractice);
+        for (const appointmentId of practice.appointments) {
+          const appointment = await _em.findOne(Appointment, appointmentId);
+
+          if (!appointment) throw new Error(`El turno con id ${appointmentId} no existe`);
+          else appointments.add(appointment);
         }
-        practice.appointments.add(appointment);
+        newPractice.appointments = appointments;
       }
-    }
 
-    await _em.persistAndFlush(practice);
-    return practice;
+      _em.persistAndFlush(newPractice);
+      return newPractice;
+    } catch (error: any) {
+      logger.error('Error al crear el paciente', error);
+
+      throw `Fallo al crear el paciente: ${error.message || error.toString()}`;
+    }
   }
 
-  async update(id: string, practiceData: PracticeDTO) {
-    const _em = this._em.fork();
-    const practice = await _em.findOneOrFail(Practice, id);
+  async update(id: string, practiceUpdate: Partial<Practice>): Promise<void> {
+    try {
+      const _em = this.em.fork();
 
-    if (!practice) {
-      throw new Error('No se encontró la práctica');
+      const result = await _em.nativeUpdate(Practice, { id }, practiceUpdate);
+    } catch (error: any) {
+      logger.error('Error al actualizar la practica', error);
+
+      throw `Fallo al actualizar la practica: ${error.message || error.toString()}`;
     }
-
-    const medicalSpeciality = await _em.findOneOrFail(MedicalSpecialty, practiceData.medicalSpecialty);
-    if (!medicalSpeciality) {
-      throw new Error('No se encontró la especialidad médica');
-    }
-
-    practice.id = id;
-    practice.name = practiceData.name || practice.name;
-    practice.description = practiceData.description || practice.description;
-    practice.medicalSpecialty = medicalSpeciality || practice.medicalSpecialty;
-
-    if (practiceData.medicalInsurances) {
-      if (practice.medicalInsurances) practice.medicalInsurances.removeAll();
-      else practice.medicalInsurances = new Collection<MedicalInsurance>(practice);
-
-      for (const mi of practiceData.medicalInsurances) {
-        const id = mi.id;
-        const insurance = await _em.findOne(MedicalInsurance, id || '-1');
-
-        if (!insurance) {
-          throw new Error(`No se encontró el seguro médico con ID ${id}`);
-        }
-
-        practice.medicalInsurances.add(insurance);
-      }
-    }
-
-    if (practiceData.appointments) {
-      //Check
-      if (practice.appointments) practice.appointments.removeAll();
-      else practice.appointments = new Collection<Appointment>(practice);
-
-      for (const app of practiceData.appointments) {
-        const id = app.id;
-        const appointment = await _em.findOne(Appointment, id || '-1');
-
-        if (!appointment) {
-          throw new Error(`No se encontró la cita con ID ${id}`);
-        }
-
-        practice.appointments.add(appointment);
-      }
-    }
-
-    await _em.persistAndFlush(practice);
-    return practice;
   }
 
   async delete(id: string) {
-    const _em = this._em.fork();
+    const _em = this.em.fork();
     const practice = await _em.findOneOrFail(Practice, id);
 
     if (!practice) {

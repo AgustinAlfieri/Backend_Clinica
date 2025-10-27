@@ -1,12 +1,10 @@
 import { orm } from '../../../shared/database/orm.js';
-import { NextFunction, Request, Response } from 'express';
-import { Medic } from './medic.entity.js';
-import { MedicalSpecialty } from '../../../medicalSpecialty/medicalSpecialty.entity.js';
-import { AppError } from '../../../shared/errorManagment/appError.js';
+import { Request, Response } from 'express';
 import { StatusCodes } from 'http-status-codes';
 import { logger } from '../../../shared/logger/logger.js';
-import { Role } from '../../../shared/enums/role.enum.js';
 import { MedicService } from './medic.service.js';
+import { ResponseManager } from '../../../shared/helpers/responseHelper.js';
+import { resolveMessage } from '../../../shared/errorManagment/appError.js';
 
 const em = orm.em.fork();
 
@@ -15,36 +13,38 @@ async function findAll(req: Request, res: Response) {
     const medicService = new MedicService(em);
     const medics = await medicService.findAll();
 
-    if(!medics)
-      throw new AppError('No se encontraron medicos', StatusCodes.NOT_FOUND);
+    if (!medics) {
+      ResponseManager.notFound(res, 'No se encontraron medicos');
+      return;
+    }
 
-    res.status(StatusCodes.ACCEPTED).send({ message: 'Medicos encontrados: ', data: medics });
-  } catch(error) {
+    ResponseManager.success(res, medics, 'Medicos encontrados', StatusCodes.ACCEPTED);
+  } catch (error) {
     logger.error('Error en busqueda de medicos:', error);
 
-    res.status(StatusCodes.INTERNAL_SERVER_ERROR).send({
-      error: error instanceof Error ? error.message : error 
-    });
+    const errorMessage = resolveMessage(error);
+    ResponseManager.error(res, 'Error al obtener los medicos', errorMessage, StatusCodes.INTERNAL_SERVER_ERROR);
   }
-
 }
 
 async function findOne(req: Request, res: Response) {
-  try{
+  try {
     const id: string = req.params.id;
+
     const medicService = new MedicService(em);
     const medic = await medicService.findOne(id);
 
-    if(!medic)
-      throw new AppError('Medico no encontrado', StatusCodes.NOT_FOUND);
+    if (!medic) {
+      ResponseManager.notFound(res, 'Medico no encontrado');
+      return;
+    }
 
-    res.status(StatusCodes.ACCEPTED).send({ message: 'Medico encontrado: ', data: medic });
+    ResponseManager.success(res, medic, 'Medico encontrado', StatusCodes.ACCEPTED);
   } catch (error) {
     logger.error('Error en busqueda de medico:', error);
 
-    res.status(StatusCodes.INTERNAL_SERVER_ERROR).send({
-      error: error instanceof Error ? error.message : error 
-    });
+    const errorMessage = resolveMessage(error);
+    ResponseManager.error(res, 'Error al obtener el medico', errorMessage, StatusCodes.INTERNAL_SERVER_ERROR);
   }
 }
 
@@ -53,55 +53,69 @@ async function create(req: Request, res: Response) {
     const medicService = new MedicService(em);
     const medicCreated = await medicService.create(req.body);
 
-    if(!medicCreated)
-      throw new AppError('Error al crear medico', StatusCodes.INTERNAL_SERVER_ERROR);
+    if (!medicCreated) {
+      ResponseManager.badRequest(res, 'No se pudo crear el medico');
+      return;
+    }
 
-    res.status(StatusCodes.CREATED).send({ message: 'Medico creado: ', data: medicCreated });
+    ResponseManager.success(res, medicCreated, 'Medico creado', StatusCodes.CREATED);
   } catch (error) {
     logger.error('Error al crear medico:', error);
 
-    res.status(StatusCodes.BAD_REQUEST).send({
-      error: error instanceof Error ? error.message : error
-    });
+    const errorMessage = resolveMessage(error);
+    ResponseManager.error(res, 'Error al crear el medico', errorMessage, StatusCodes.INTERNAL_SERVER_ERROR);
   }
 }
 
 async function update(req: Request, res: Response) {
-  try{
+  try {
     const id = req.params.id;
+
     const medicService = new MedicService(em);
-    const medicUpdated = await medicService.update(id, req.body);
+    await medicService.update(id, req.body);
 
-    if(!medicUpdated)
-      throw new AppError('Error al modificar medico', StatusCodes.INTERNAL_SERVER_ERROR);
-
-    res.status(StatusCodes.OK).send({ message: 'Medico modificado: ', data: medicUpdated });
+    ResponseManager.success(res, null, 'Medico modificado', StatusCodes.OK);
   } catch (error) {
     logger.error('Error al modificar medico:', error);
 
-    res.status(StatusCodes.BAD_REQUEST).send({
-      error: error instanceof Error ? error.message : error
-    });
+    const errorMessage = resolveMessage(error);
+    ResponseManager.error(res, 'Error al modificar el medico', errorMessage, StatusCodes.INTERNAL_SERVER_ERROR);
   }
 }
 
 async function remove(req: Request, res: Response) {
   try {
     const id = req.params.id;
+
     const medicService = new MedicService(em);
-    const result = await medicService.remove(id);
+    await medicService.remove(id);
 
-    if(!result)
-      throw new AppError('Error al eliminar medico', StatusCodes.INTERNAL_SERVER_ERROR);
-
-    res.status(StatusCodes.OK).send({ message: 'Medico eliminado' });
+    ResponseManager.success(res, null, 'Medico eliminado', StatusCodes.OK);
   } catch (error) {
     logger.error('Error al eliminar medico:', error);
 
-    res.status(StatusCodes.BAD_REQUEST).send({
-      error: error instanceof Error ? error.message : error
-    });
+    const errorMessage = resolveMessage(error);
+    ResponseManager.error(res, 'Error al eliminar el medico', errorMessage, StatusCodes.INTERNAL_SERVER_ERROR);
+  }
+  return;
+}
+
+async function getMedicSchedule(req: Request, res: Response) {
+  try{
+    const id = req.params.id;
+    const medicService = new MedicService(em);
+    const schedule = await medicService.getMedicSchedule(id);
+
+    if(!schedule){
+      ResponseManager.notFound(res, 'No se encontro el horario del medico');
+      return;
+    }
+    ResponseManager.success(res, schedule, 'Horario del medico encontrado', StatusCodes.ACCEPTED);
+  }catch(error){
+    logger.error('Error en busqueda de horario del medico:', error);
+    const errorMessage = resolveMessage(error);
+    ResponseManager.error(res, 'Error al obtener el horario del medico', errorMessage, StatusCodes.INTERNAL_SERVER_ERROR);
   }
 }
 
-export { findAll, findOne, update, create, remove };
+export { findAll, findOne, update, create, remove, getMedicSchedule };

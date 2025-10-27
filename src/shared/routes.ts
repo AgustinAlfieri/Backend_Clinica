@@ -9,14 +9,50 @@ import { typeAppointmentStatusRouter } from '../typeAppointmentStatus/typeAppoin
 import { appointmentStatusRouter } from '../appointmentStatus/appointmentStatus.routes.js'; // Import the appointmentStatus router
 import { Application } from 'express';
 import { authRouter } from './auth/auth.routes.js';
+import { Request, Response } from 'express';
+
+const messages: any = {
+  message: 'API Clinica Medivia',
+  endpoints: {
+    Administrativos: '/app/v1/administrative',
+    'Especialidades Médicas': '/app/v1/medicalSpecialty',
+    'Estados de turnos': '/app/v1/appointmentStatus',
+    Medicos: '/app/v1/medic',
+    'Obras Sociales': '/app/v1/medicalInsurance',
+    Pacientes: '/app/v1/patient',
+    Practicas: '/app/v1/practice',
+    'Tipos de estados de turnos': '/app/v1/typeAppointmentStatus',
+    Turnos: '/app/v1/appointment'
+  },
+  'Dentro de cada endpoint': {
+    'Buscar todos': '/findAll',
+    'Buscar uno': '/findOne/:id',
+    Actualizar: '/update/:id',
+    Crear: '/create',
+    Eliminar: '/remove/:id'
+  },
+  'Otros endpoints': {
+    Autenticación: {
+      Login: '/app/v1/auth/login',
+      Registro: '/app/v1/auth/register'
+    },
+    // Ruta sin autenticación para el registro de los pacientes
+    // Solo devuelve id y name de las obras sociales.
+    'ID y nombre de las obras sociales': '/app/v1/medicalInsurance/findAllForRegister'
+  }
+};
 
 export default (app: Application) => {
+  app.get('/', (req: Request, res: Response) => {
+    res.json(messages);
+  });
+
   app.use('/app/v1/appointment', appointmentRouter);
   app.use('/app/v1/patient', patientRouter);
   app.use('/app/v1/medic', routerMedic);
   app.use('/app/v1/medicalSpecialty', medicalSpecialtyRouter);
   app.use('/app/v1/typeAppointmentStatus', typeAppointmentStatusRouter);
-  app.use('/app/v1/appointmentStatus', appointmentStatusRouter); // Add this line to include the appointmentStatus routes
+  app.use('/app/v1/appointmentStatus', appointmentStatusRouter);
   app.use('/app/v1/administrative', administrativeRouter);
   app.use('/app/v1/practice', practiceRouter);
   app.use('/app/v1/medicalInsurance', medicalInsuranceRouter);

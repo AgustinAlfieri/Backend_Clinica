@@ -15,11 +15,11 @@ export class MedicalSpecialty {
   practices = new Collection<Practice>(this);
 
   @ManyToMany(() => Medic, (medic) => medic.medicalSpecialty, { cascade: [Cascade.ALL], owner: true })
-  medicalProfessionals = new Collection<Medic>(this);
+  medics = new Collection<Medic>(this);
 
   constructor(name: string) {
     this.name = name;
     this.practices = new Collection<Practice>(this);
-    this.medicalProfessionals = new Collection<Medic>(this);
+    this.medics = new Collection<Medic>(this);
   }
 }

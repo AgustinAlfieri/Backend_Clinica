@@ -3,9 +3,25 @@ import { Medic } from './medic.entity.js';
 import { DataNewUser, hashPassword } from '../../../shared/auth/auth.service.js';
 import { Role } from '../../../shared/enums/role.enum.js';
 import { MedicalSpecialty } from '../../../medicalSpecialty/medicalSpecialty.entity.js';
-import { comparePassword } from '../../../shared/auth/auth.service.js';
 import { logger } from '../../../shared/logger/logger.js';
 import { Appointment } from '../../../appointment/appointment.entity.js';
+import { resolveMessage } from '../../../shared/errorManagment/appError.js';
+
+interface TimeSlot {
+  datetime: string; // ISO string
+  available: boolean;
+}
+
+interface AvailableSchedule {
+  date: string; // YYYY-MM-DD
+  slots: TimeSlot[];
+}
+
+interface WorkingHours {
+  day: number; // 0 = Domingo, 1 = Lunes, etc.
+  startTime: string; // "09:00"
+  endTime: string; // "17:00"
+}
 
 export class MedicService {
   constructor(private em: EntityManager) {}
@@ -21,129 +37,186 @@ export class MedicService {
   }
 
   async create(medic: DataNewUser): Promise<Medic> {
-    const _em = this.em.fork();
-    const newMedic = new Medic();
+    try {
+      // Validaciones básicas
+      if (!medic.dni && !medic.email) throw new Error('Debe ingresar dni o email');
 
-    const existMedicByDni = await _em.findOne(Medic, { dni: medic.dni });
-    if (existMedicByDni) throw new Error('Ya existe un médico con ese DNI');
+      if (!medic.name || !medic.password || !medic.license) throw new Error('Faltan datos obligatorios');
 
-    const existMedicByLicense = await _em.findOne(Medic, { license: medic.license });
-    if (existMedicByLicense) throw new Error('Ya existe un médico con esa licencia');
+      const _em = this.em.fork();
+      // Creo el médico
+      const newMedic = _em.create(Medic, {
+        dni: medic.dni,
+        name: medic.name,
+        email: medic.email,
+        password: await hashPassword(medic.password),
+        telephone: medic.telephone,
+        license: medic.license,
+        role: Role.MEDIC
+      });
 
-    if (!medic.password || !medic.email || !medic.dni || !medic.name || !medic.license)
-      throw new Error('Todos los campos son obligatorios');
+      // Si viene con especialidades, las busco y asigno
+      if (medic.medicalSpecialty && medic.medicalSpecialty.length > 0) {
+        for (const specialtyId of medic.medicalSpecialty) {
+          const specialty = await _em.findOne(MedicalSpecialty, specialtyId);
 
-    //No plain text password
-    newMedic.password = await hashPassword(medic.password);
+          if (!specialty)
+            throw new Error(`La especialidad con id ${specialtyId} no existe`);
 
-    //Assign fields
-    newMedic.dni = medic.dni;
-    newMedic.name = medic.name;
-    newMedic.email = medic.email;
-    newMedic.license = medic.license;
-
-    medic.telephone ? (newMedic.telephone = medic.telephone) : (newMedic.telephone = undefined);
-
-    newMedic.medicalSpecialty = new Collection<MedicalSpecialty>(newMedic);
-
-    if (!(medic.medicalSpecialty === null)) {
-      for (const id of medic.medicalSpecialty) {
-        const specialty = await _em.findOne(MedicalSpecialty, id || '-1');
-
-        if (!specialty) throw new Error('No se encontró la especialidad médica');
-
-        newMedic.medicalSpecialty.add(specialty);
+          newMedic.medicalSpecialty.add(specialty);
+        }
       }
+
+      // Si viene con turnos, los busco y asigno
+      if (medic.appointments) {
+        for (const appointmentId of medic.appointments) {
+          const appointment = await _em.findOne(Appointment, appointmentId);
+
+          if (!appointment) throw new Error(`El turno con id ${appointmentId} no existe`);
+          else newMedic.appointments.add(appointment);
+        }
+      }
+      _em.persistAndFlush(newMedic);
+      return newMedic;
+    } catch (error: any) {
+      logger.error('Error al crear el medico', error);
+
+      throw `Fallo al crear el medico: ${error.message || error.toString()}`;
     }
-
-    newMedic.role = Role.MEDIC;
-
-    _em.persistAndFlush(newMedic);
-    return newMedic;
   }
 
-  async update(id: string, medicUpdate: Partial<DataNewUser>): Promise<Medic | null> {
+  async update(id: string, medicUpdate: Partial<DataNewUser>): Promise<void> {
     try {
       const _em = this.em.fork();
-      const medic = await _em.findOneOrFail(Medic, id, { populate: ['medicalSpecialty', 'appointments'] });
-      const newMedicData = new Medic();
 
-      newMedicData.id = id;
+      // Si quiere actualizar la password, la hasheo
+      if (medicUpdate.password)
+        medicUpdate.password = await hashPassword(medicUpdate.password);
+      
+      _em.nativeUpdate(Medic, { id }, medicUpdate);
 
-      if (!medic) {
-        throw new Error('No se encontró el médico');
-      }
+    } catch (error: any) {
+      logger.error('Error al actualizar medico', error);
 
-      //validate if password has changed
-      if(!medicUpdate.password){
-          newMedicData.password = medic.password;
-      }
-      else {
-          const noChangePassword : boolean = await comparePassword(medicUpdate.password, medic.password);
-
-            if(noChangePassword)
-                newMedicData.password = medic.password;
-            else
-                newMedicData.password = await hashPassword(medicUpdate.password);
-        }
-
-      newMedicData.dni = medicUpdate.dni || medic.dni;
-      newMedicData.name = medicUpdate.name || medic.name;
-      newMedicData.email = medicUpdate.email || medic.email;
-      newMedicData.telephone = medicUpdate.telephone || medic.telephone;
-
-      //MedicalSpecialty
-      if (!medicUpdate.medicalSpecialty) {
-        newMedicData.medicalSpecialty = new Collection<MedicalSpecialty>(newMedicData);
-        newMedicData.medicalSpecialty = medic.medicalSpecialty;
-      } else {
-        newMedicData.medicalSpecialty = new Collection<MedicalSpecialty>(newMedicData);
-        for (const ms of medicUpdate.medicalSpecialty) {
-          const specialty = await _em.findOne(MedicalSpecialty, ms);
-
-          if (!specialty) throw new Error('No se encontró la especialidad médica');
-
-          newMedicData.medicalSpecialty.add(specialty);
-        }
-      }
-
-      newMedicData.license = medicUpdate.license || medic.license;
-      newMedicData.role = Role.MEDIC;
-
-      //Appointments
-      if (!medicUpdate.appointments) {
-        newMedicData.appointments = medic.appointments;
-      } else {
-        newMedicData.appointments = new Collection<Appointment>(newMedicData);
-        for (const app of medicUpdate.appointments) {
-          const appointment = await _em.findOne(Appointment, app);
-
-          if (!appointment) throw new Error('No se encontró la cita médica');
-
-          newMedicData.appointments.add(appointment);
-        }
-      }
-
-      _em.assign(medic, newMedicData);
-      await _em.flush();
-
-      return newMedicData;
-    } catch (error) {
-      logger.error('Error al modificar médico:', error);
-      throw new Error('Error al modificar médico');
+      throw `Fallo al actualizar medico: ${resolveMessage(error)}`;
     }
   }
 
-  async remove(id: string): Promise<boolean> {
+  async remove(id: string) {
     try {
       const _em = this.em.fork();
       const medic = await _em.findOneOrFail(Medic, id);
-      _em.remove(medic);
-      await _em.flush();
-      return true;
-    } catch (error) {
-      logger.error('Error al eliminar médico:', error);
-      return false;
+
+      await _em.removeAndFlush(medic);
+    } catch (error: any) {
+      logger.error('Error al eliminar médico', error);
+
+      throw `Error al eliminar médico: ${resolveMessage(error)}`;
     }
   }
+
+  async getMedicSchedule(id: string, slotDuratioon: number = 30): Promise <AvailableSchedule[]>  { 
+    try {
+      const _em = this.em.fork();
+
+      const medic = await _em.findOne(Medic, id, {
+        populate: ["appointments"],
+      });
+
+      if (!medic) throw new Error("No se encontro el medico");
+
+      // Traigo la fecha de hoy y seteo la hora en 00:00:00
+      const today = new Date();
+      today.setHours(0, 0, 0, 0);
+
+      // Calculo la fecha dentro de dos semanas
+      const twoWeeksLater = new Date(today);
+      twoWeeksLater.setDate(today.getDate() + 14);
+
+      // Busco los turnos del medico en las proximas dos semanas
+      const bookedAppointments = await _em.find(Appointment, {
+        medic: medic.id,
+        appointmentDate: { $gte: today, $lte: twoWeeksLater },
+      });
+
+      // Creo un set con las fechas y horas ya ocupadas para facilitar la busqueda
+      const bookedTimes = new Set(
+        bookedAppointments.map((app) => {
+          const appointmentDate = app.appointmentDate;
+          return appointmentDate.toISOString();
+        })
+      );
+
+      // Defino el horario laboral del medico (esto podria venir de la BD en un caso real)
+      const schedule: AvailableSchedule[] = [];
+
+      // Hardcodeo horario laboral de lunes a viernes de 9 a 17, podriamos modificar la entidad para que cada medico tenga su propio horario
+      const workingHours: WorkingHours[] = [
+        { day: 1, startTime: "09:00", endTime: "17:00" }, // Lunes
+        { day: 2, startTime: "09:00", endTime: "17:00" }, // Martes
+        { day: 3, startTime: "09:00", endTime: "17:00" }, // Miércoles
+        { day: 4, startTime: "09:00", endTime: "17:00" }, // Jueves
+        { day: 5, startTime: "09:00", endTime: "17:00" }, // Viernes
+      ];
+
+      for (let i = 0; i < 14; i++) {
+        // Me traigo la fecha actual en el loop
+        const currentDate = new Date(today);
+        currentDate.setDate(today.getDate() + i);
+
+        const dayOfWeek = currentDate.getDay(); // 0 = Domingo, 1 = Lunes, etc
+
+        const workingDay = workingHours.find((wh) => wh.day === dayOfWeek);
+
+        if (!workingDay) continue; // Si no trabaja ese dia, paso al siguiente
+
+        const dateSString = currentDate.toISOString().split("T")[0]; // YYYY-MM-DD
+        const slots: TimeSlot[] = [];
+
+        // Genero los slots de 30 minutos entre el horario de inicio y fin
+        const [startHour, startMinute] = workingDay.startTime
+          .split(":")
+          .map(Number);
+        const [endHour, endMinute] = workingDay.endTime.split(":").map(Number);
+
+        const currentSlot = new Date(currentDate);
+        currentSlot.setHours(startHour, startMinute, 0, 0); // Me paro en la hora de inicio
+
+        const endTime = new Date(currentDate);
+        endTime.setHours(endHour, endMinute, 0, 0); // Hora de fin
+
+        // Itero creando slots de 30 minutos hasta llegar a la hora de fin
+        while (currentSlot < endTime) {
+          //
+          const slotISO = currentSlot.toISOString();
+
+          // Verifico si el slot esta ocupado
+          const isAvailable = !bookedTimes.has(slotISO);
+
+          slots.push({
+            datetime: slotISO,
+            available: isAvailable,
+          });
+
+          // Avanzo al siguiente slot
+          currentSlot.setMinutes(currentSlot.getMinutes() + slotDuratioon);
+        }
+
+        if (slots.length > 0) {
+          schedule.push({
+            date: dateSString,
+            slots: slots,
+          });
+        }
+
+
+      } 
+      return schedule;
+    } catch (error: any) {
+      logger.error("Error al obtener el horario del medico", error);
+      throw `Fallo al obtener el horario del medico: ${
+        error.message || error.toString()
+      }`;
+    }
+  } 
 }

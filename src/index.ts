@@ -8,7 +8,11 @@ import { errorHandler } from './shared/middlewares/errorHandler.js';
 const app = express();
 app.use(express.json());
 
-const allowedOrigins = ['http://localhost:5173', 'https://frontend-clinica-seven.vercel.app' ,'https://frontend-clinica-prod.vercel.app'];
+const allowedOrigins = [
+  'http://localhost:5173',
+  'https://frontend-clinica-seven.vercel.app',
+  'https://frontend-clinica-prod.vercel.app'
+];
 
 app.use(
   cors({
@@ -25,15 +29,15 @@ app.use(
   })
 );
 
-// 👉 RequestContext de MikroORM (después de CORS, antes de rutas)
+// RequestContext de MikroORM (después de CORS, antes de rutas)
 app.use((req, res, next) => {
   RequestContext.create(orm.em, next);
 });
 
 const initApp = async () => {
   const routes = await import('./shared/routes.js');
-  routes.default(app); // tus rutas
-  app.use(errorHandler); // error handler al final
+  routes.default(app);
+  app.use(errorHandler);
 };
 
 await syncSchema(); // ⚠️ solo en dev, nunca en producción

@@ -1,7 +1,10 @@
 import { orm } from '../shared/database/orm.js';
-import { NextFunction, Request, Response } from 'express';
+import { Request, Response } from 'express';
 import { StatusCodes } from 'http-status-codes';
 import { MedicalSpecialtyService } from './medicalSpecialty.service.js';
+import { ResponseManager } from '../shared/helpers/responseHelper.js';
+import { logger } from '../shared/logger/logger.js';
+import { resolveMessage } from '../shared/errorManagment/appError.js';
 
 const em = orm.em;
 
@@ -11,51 +14,53 @@ async function findAll(req: Request, res: Response) {
     const specialties = await medicalSpecialtyService.findAll();
 
     if(!specialties){
-      res.status(StatusCodes.NOT_FOUND).send('Especialidades médicas no encontradas');
+      ResponseManager.notFound(res, 'No se encontraron especialidades médicas');
       return;
     }
 
-    res.status(StatusCodes.OK).send(specialties);
+    ResponseManager.success(res, specialties, 'Especialidades médicas obtenidas', StatusCodes.OK);
   } catch (error) {
-    res.status(StatusCodes.INTERNAL_SERVER_ERROR).send({
-      error: error instanceof Error ? error.message : 'Error desconocido',
-    });
+    logger.error('Error al obtener las especialidades médicas', { error });
+
+    ResponseManager.error(res, resolveMessage(error), 'Error al obtener las especialidades médicas', StatusCodes.INTERNAL_SERVER_ERROR);
   }
 }
 
 async function findOne(req: Request, res: Response) {
   try{
     const id = req.params.id;
+
     const medicalSpecialtyService =  new MedicalSpecialtyService(em);
     const specialty = await medicalSpecialtyService.findOne(id);
 
     if(!specialty){
-      res.status(StatusCodes.NOT_FOUND).send('Especialidad médica no encontrada');
+      ResponseManager.notFound(res, 'Especialidad médica no encontrada');
       return;
     }
 
-    res.status(StatusCodes.OK).send(specialty);
+    ResponseManager.success(res, specialty, 'Especialidad médica obtenida', StatusCodes.OK);
   } catch (error) {
-    res.status(StatusCodes.INTERNAL_SERVER_ERROR).send({
-      error: error instanceof Error ? error.message : 'Error desconocido',
-    });
+    logger.error('Error al obtener la especialidad médica', { error });
+
+    ResponseManager.error(res, resolveMessage(error), 'Error al obtener la especialidad médica', StatusCodes.INTERNAL_SERVER_ERROR);
   }
 }
 
 async function update(req: Request, res: Response) {
-  try{
-    const id = req.params.id;
+  try {
     const medicalSpecialtyService =  new MedicalSpecialtyService(em);
-    const updatedSpecialty = await medicalSpecialtyService.update(id, req.body.sanitizedInput);
+    const updatedSpecialty = await medicalSpecialtyService.update(req.body);
 
     if(!updatedSpecialty){
-      res.status(StatusCodes.NOT_FOUND).send('Error al actualizar la especialidad médica');
+      ResponseManager.badRequest(res, 'Error al actualizar la especialidad médica');
       return;
     } 
+
+    ResponseManager.success(res, updatedSpecialty, 'Especialidad médica actualizada', StatusCodes.OK);
   } catch (error) {
-    res.status(StatusCodes.INTERNAL_SERVER_ERROR).send({
-      error: error instanceof Error ? error.message : 'Error desconocido',
-    });
+    logger.error('Error al actualizar la especialidad médica', { error });
+
+    ResponseManager.error(res, resolveMessage(error), 'Error al actualizar la especialidad médica', StatusCodes.INTERNAL_SERVER_ERROR);
   }
 }
 
@@ -65,28 +70,29 @@ async function create(req: Request, res: Response) {
     const newSpecialty = await medicalSpecialtyService.create(req.body);
 
     if(!newSpecialty){
-      res.status(StatusCodes.BAD_REQUEST).send('Error al crear la especialidad médica');
+      ResponseManager.badRequest(res, 'Error al crear la especialidad médica');
       return;
     }
 
-    res.status(StatusCodes.CREATED).send(newSpecialty);
+    ResponseManager.success(res, newSpecialty, 'Especialidad médica creada', StatusCodes.CREATED);
   } catch (error) {
-    res.status(StatusCodes.INTERNAL_SERVER_ERROR).send({
-      error: error instanceof Error ? error.message : 'Error desconocido',
-    });
+    logger.error('Error al crear la especialidad médica', { error });
+
+    ResponseManager.error(res, resolveMessage(error), 'Error al crear la especialidad médica', StatusCodes.INTERNAL_SERVER_ERROR);
   }
 }
 async function remove(req: Request, res: Response) {
   try{
     const id = req.params.id;
+
     const medicalSpecialtyService =  new MedicalSpecialtyService(em);
     await medicalSpecialtyService.remove(id);
 
-    res.status(StatusCodes.OK).send({ message: 'Especialidad médica eliminada correctamente' });
+    ResponseManager.success(res, null, 'Especialidad médica eliminada correctamente', StatusCodes.OK);
   } catch (error) {
-    res.status(StatusCodes.INTERNAL_SERVER_ERROR).send({
-      error: error instanceof Error ? error.message : 'Error desconocido',
-    });
+    logger.error('Error al eliminar la especialidad médica', error);
+
+    ResponseManager.error(res, resolveMessage(error), 'Error al eliminar la especialidad médica', StatusCodes.INTERNAL_SERVER_ERROR);
   }
 }
 

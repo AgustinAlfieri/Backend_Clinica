@@ -2,11 +2,13 @@ import { Collection, EntityManager } from '@mikro-orm/mysql';
 import { MedicalSpecialty } from './medicalSpecialty.entity.js';
 import { Practice } from '../practice/practice.entity.js';
 import { Medic } from '../user/userTypes/medic/medic.entity.js';
+import { resolveMessage } from '../shared/errorManagment/appError.js';
 
-interface MedicalSpecialtyDTO {
+interface MedicalSpecialtyInput {
+  id?: string;
   name: string;
-  practices: Collection<Practice>;
-  medicalProfessionals?: Collection<Medic>;
+  practices?: Collection<Practice>;
+  medics?: Collection<Medic>;
 }
 
 export class MedicalSpecialtyService {
@@ -14,107 +16,71 @@ export class MedicalSpecialtyService {
 
   async findAll() {
     const em = this.em.fork();
-    const specialties = await em.find(MedicalSpecialty, {}, { populate: ['practices', 'medicalProfessionals'] });
-
-    if (!specialties) {
-      throw new Error('Especialidades médicas no encontradas');
-    }
-
-    return specialties;
+    return await em.find(MedicalSpecialty, {}, { populate: ['practices', 'medics'] });
   }
 
   async findOne(id: string) {
     const em = this.em.fork();
-    const medicalSpecialty = await em.findOne(MedicalSpecialty, id, {
-      populate: ['practices', 'medicalProfessionals']
-    });
-
-    if (!medicalSpecialty) {
-      throw new Error('Especialidad médica no encontrada');
-    }
-
-    return medicalSpecialty;
+    return await em.findOne(MedicalSpecialty, id, {populate: ['practices', 'medics']});
   }
 
-  async update(id: string, medicalSpecialtyData: MedicalSpecialtyDTO) {
-    const em = this.em.fork();
-    const medicalSpecialty = await em.findOneOrFail(MedicalSpecialty, id);
+  async update(medicalSpecialtyData: Partial<MedicalSpecialtyInput>) {
+    try {
+      const em = this.em.fork();
+      
+      //Validacion basica
+      if(!medicalSpecialtyData.name) 
+        throw new Error('El nombre de la especialidad médica es un campo obligatorio');
+      
+      const medicalSpecialty = em.create(MedicalSpecialty, {
+        name: medicalSpecialtyData.name,
+      });
 
-    medicalSpecialty.id = id;
-    medicalSpecialty.name = medicalSpecialtyData.name;
+      em.nativeUpdate(MedicalSpecialty, { id: medicalSpecialtyData.id }, { name : medicalSpecialtyData.name });
 
-    if (medicalSpecialtyData.practices) {
-      for (const p of medicalSpecialtyData.practices) {
-        const id_p = p.id;
-        const practice = await em.findOneOrFail(Practice, id_p);
+      return medicalSpecialty;
+    } catch (error) {
+      console.error('Error al guardar la especialidad médica:', error);
 
-        if (!practice) {
-          throw new Error(`Práctica con id ${id_p} no encontrada`);
-        }
-
-        medicalSpecialty.practices.add(practice);
-      }
+      throw `Fallo al actualizar la especialidad médica: ${resolveMessage(error)}`;
     }
-
-    if (medicalSpecialtyData.medicalProfessionals) {
-      for (const m of medicalSpecialtyData.medicalProfessionals) {
-        const id_m = m.id;
-        const medicalProfessional = await em.findOneOrFail(Medic, id_m);
-
-        if (!medicalProfessional) {
-          throw new Error(`Profesional médico con id ${id_m} no encontrado`);
-        }
-        medicalSpecialty.medicalProfessionals.add(medicalProfessional);
-      }
-    }
-
-    await em.persistAndFlush(medicalSpecialty);
-    return medicalSpecialty;
   }
 
-  async create(medicalSpecialtyData: MedicalSpecialtyDTO) {
+  async create(medicalSpecialtyData: MedicalSpecialtyInput) {
+    try {
     const em = this.em.fork();
-    const newMedicalSpecialty = new MedicalSpecialty(medicalSpecialtyData.name);
 
-    if (medicalSpecialtyData.practices) {
-      for (const p of medicalSpecialtyData.practices) {
-        const id_p = p.id;
-        const practice = await em.findOneOrFail(Practice, id_p);
+      const newMedicalSpecialty = em.create(MedicalSpecialty, {
+        name: medicalSpecialtyData.name,
+      });
 
-        if (!practice) {
-          throw new Error(`Práctica con id ${id_p} no encontrada`);
-        }
+      em.persistAndFlush(newMedicalSpecialty);
 
-        newMedicalSpecialty.practices.add(practice);
-      }
+      return newMedicalSpecialty;
+    } catch (error) {
+      console.error('Error al guardar la especialidad médica:', error);
+
+      throw `Fallo al crear la especialidad médica: ${resolveMessage(error)}`;
     }
-
-    if (medicalSpecialtyData.medicalProfessionals) {
-      for (const m of medicalSpecialtyData.medicalProfessionals) {
-        const id_m = m.id;
-        const medicalProfessional = await em.findOneOrFail(Medic, id_m);
-
-        if (!medicalProfessional) {
-          throw new Error(`Profesional médico con id ${id_m} no encontrado`);
-        }
-
-        newMedicalSpecialty.medicalProfessionals.add(medicalProfessional);
-      }
-    }
-
-    await em.persistAndFlush(newMedicalSpecialty);
-    return newMedicalSpecialty;
   }
 
   async remove(id: string) {
-    const em = this.em.fork();
-    const medicalSpeciality = em.findOne(MedicalSpecialty, id);
+    try {
+      const em = this.em.fork();
 
-    if (!medicalSpeciality) {
-      throw new Error('Especialidad médica no encontrada');
+      const medicalSpeciality = await em.findOneOrFail(MedicalSpecialty, { id: id });
+
+      if (!medicalSpeciality)
+        throw new Error('Especialidad médica no encontrada');
+
+      em.remove(medicalSpeciality);
+      await em.flush();
+
+      return medicalSpeciality;
+    } catch (error) {
+      console.error('Error al eliminar la especialidad médica:', error);
+
+      throw `Fallo al eliminar la especialidad médica: ${resolveMessage(error)}`;
     }
-
-    await em.removeAndFlush(medicalSpeciality);
-    return;
   }
 }

@@ -1,10 +1,38 @@
-import { Router } from "express";
-import {findAll, findOne,create,update,remove} from "./practice.controller.js";
+import { Router } from 'express';
+import { findAll, findOne, create, update, remove } from './practice.controller.js';
+import { authMiddleware } from '../shared/middlewares/auth.middleware.js';
+import { validateInput } from '../shared/middlewares/validateInput.js';
+import { practiceSchema } from '../shared/schemas/userSchemas.js';
 
 export const practiceRouter = Router();
 
-practiceRouter.get('/findAll', findAll);
-practiceRouter.get('/findOne/:id', findOne);
-practiceRouter.post('/update/:id', update);
-practiceRouter.post('/create', create);
-practiceRouter.delete('/remove/:id', remove);
+practiceRouter.get(
+  '/findAll',
+  authMiddleware('Practice', 'view'),
+  validateInput({ location: 'body', schema: practiceSchema }),
+  findAll
+);
+practiceRouter.get(
+  '/findOne/:id',
+  authMiddleware('Practice', 'view'),
+  validateInput({ location: 'body', schema: practiceSchema }),
+  findOne
+);
+practiceRouter.post(
+  '/update/:id',
+  authMiddleware('Practice', 'update'),
+  validateInput({ location: 'body', schema: practiceSchema }),
+  update
+);
+practiceRouter.post(
+  '/create',
+  authMiddleware('Practice', 'create'),
+  validateInput({ location: 'body', schema: practiceSchema }),
+  create
+);
+practiceRouter.delete(
+  '/remove/:id',
+  authMiddleware('Practice', 'delete'),
+  validateInput({ location: 'body', schema: practiceSchema }),
+  remove
+);

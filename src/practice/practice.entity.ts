@@ -18,7 +18,7 @@ export class Practice {
   @ManyToOne(() => MedicalSpecialty)
   public medicalSpecialty: Rel<MedicalSpecialty>;
 
-  @ManyToMany(() => MedicalInsurance, (medical_i) => medical_i.coveredPractices, {
+  @ManyToMany(() => MedicalInsurance, (medical_i) => medical_i.practices, {
     cascade: [Cascade.ALL],
     owner: true
   })

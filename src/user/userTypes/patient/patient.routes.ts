@@ -1,14 +1,38 @@
 import { Router } from 'express';
 import { findAll, findOne, update, create, remove } from './patient.controller.js';
-import { checkPermissionMiddleware } from '../../../shared/middlewares/checkPermissionMiddleware.js';
 import { authMiddleware } from '../../../shared/middlewares/auth.middleware.js';
-import { Role } from '../../../shared/enums/role.enum.js';
-import { actions } from '../../../shared/permission/rolesPermission.js';
+import { validateInput } from '../../../shared/middlewares/validateInput.js';
+import { patientSchema } from '../../../shared/schemas/userSchemas.js';
 
 export const patientRouter = Router();
 
-patientRouter.get('/findAll', authMiddleware, checkPermissionMiddleware(Role.PATIENT, actions.VIEW), findAll);
-patientRouter.get('/findOne/:id', authMiddleware, checkPermissionMiddleware(Role.PATIENT, actions.VIEW), findOne);
-patientRouter.post('/create', authMiddleware, checkPermissionMiddleware(Role.PATIENT, actions.CREATE), create);
-patientRouter.post('/update/:id', authMiddleware, checkPermissionMiddleware(Role.PATIENT, actions.UPDATE), update);
-patientRouter.delete('/remove/:id', authMiddleware, checkPermissionMiddleware(Role.PATIENT, actions.DELETE), remove);
+patientRouter.get(
+  '/findAll',
+  authMiddleware('Patient', 'view'),
+  validateInput({ location: 'body', schema: patientSchema }),
+  findAll
+);
+patientRouter.get(
+  '/findOne/:id',
+  authMiddleware('Patient', 'view'),
+  validateInput({ location: 'body', schema: patientSchema }),
+  findOne
+);
+patientRouter.post(
+  '/create',
+  authMiddleware('Patient', 'create'),
+  validateInput({ location: 'body', schema: patientSchema }),
+  create
+);
+patientRouter.post(
+  '/update/:id',
+  authMiddleware('Patient', 'update'),
+  validateInput({ location: 'body', schema: patientSchema }),
+  update
+);
+patientRouter.delete(
+  '/remove/:id',
+  authMiddleware('Patient', 'delete'),
+  validateInput({ location: 'body', schema: patientSchema }),
+  remove
+);

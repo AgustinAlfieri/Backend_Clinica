@@ -2,118 +2,113 @@ import { orm } from '../../../shared/database/orm.js';
 import { NextFunction, Request, Response } from 'express';
 import { Administrative } from './administrative.entity.js';
 import { Appointment } from '../../../appointment/appointment.entity.js'; //No esta creado, va a dar error
-import { AppError } from '../../../shared/errorManagment/appError.js';
+import { AppError, resolveMessage } from '../../../shared/errorManagment/appError.js';
 import { StatusCodes } from 'http-status-codes';
 import { Role } from '../../../shared/enums/role.enum.js';
 import { logger } from '../../../shared/logger/logger.js';
 import { AdministrativeService } from './administrative.service.js';
+import { ResponseManager } from '../../../shared/helpers/responseHelper.js';
 
 const em = orm.em.fork();
 
 async function findAll(req: Request, res: Response) {
-  try{
+  try {
     const aService = new AdministrativeService(em);
     const administratives = await aService.findAll();
 
-    if(!administratives || administratives.length === 0) {
-      res.status(StatusCodes.NOT_FOUND).send({ message: 'No se encontraron administrativos' });
+    if (!administratives) {
+      ResponseManager.notFound(res, 'No se encontraron administrativos');
       return;
     }
 
-    res.status(StatusCodes.ACCEPTED).send({ message: 'Administrativos encontrados: ', data: administratives });
-  } catch(error){
+    ResponseManager.success(res, administratives, 'Administrativos encontrados', StatusCodes.ACCEPTED);
+  } catch (error) {
     logger.error(error);
 
-    res.status(StatusCodes.INTERNAL_SERVER_ERROR).send({ 
-      error: error instanceof Error ? error.message : 'Error al obtener los administrativos'
-    });
+    const errorMessage = resolveMessage(error);
+    ResponseManager.error(res, 'Error al obtener los administrativos', errorMessage, StatusCodes.INTERNAL_SERVER_ERROR);
   }
 }
 
 async function findOne(req: Request, res: Response) {
-  try{
+  try {
     const id: string = req.params.id;
+
     const aService = new AdministrativeService(em);
     const administrative = await aService.findOne(id);
 
     if (!administrative) {
-      res.status(StatusCodes.NOT_FOUND).send({ message: 'Administrativo no encontrado' });
+      ResponseManager.notFound(res, 'Administrativo no encontrado');
       return;
     }
 
-    res.status(StatusCodes.ACCEPTED).send({ message: 'Administrativo encontrado: ', data: administrative });
+    ResponseManager.success(res, administrative, 'Administrativo encontrado', StatusCodes.ACCEPTED);
   } catch (error) {
     logger.error(error);
 
-    res.status(StatusCodes.INTERNAL_SERVER_ERROR).send({
-      error: error instanceof Error ? error.message : 'Error al obtener el administrativo'
-    });
+    const errorMessage = resolveMessage(error);
+    ResponseManager.error(res, 'Error al obtener el administrativo', errorMessage, StatusCodes.INTERNAL_SERVER_ERROR);
   }
 }
 
 async function create(req: Request, res: Response) {
-  console.log("--- NEW CREATE REQUEST ---");
-  console.log("Headers:", req.headers);
-  console.log("Content-Type header:", req.get("content-type"));
-  console.log("Raw body (req.body):", req.body);
-  console.log("Is body undefined?", req.body === undefined);
-  try{
+  try {
     const aService = new AdministrativeService(em);
     const administrative = await aService.create(req.body);
 
-    if(!administrative) {
-      res.status(StatusCodes.BAD_REQUEST).send({ message: 'No se pudo crear el administrativo' });
+    if (!administrative) {
+      ResponseManager.badRequest(res, 'No se pudo crear el administrativo');
       return;
     }
 
-    res.status(StatusCodes.CREATED).send({ message: 'Administrativo creado: ', data: administrative });
+    ResponseManager.success(res, administrative, 'Administrativo creado', StatusCodes.CREATED);
   } catch (error) {
     logger.error(error);
 
-    res.status(StatusCodes.INTERNAL_SERVER_ERROR).send({
-      error: error instanceof Error ? error.message : 'Error al crear el administrativo'
-    });
+    const errorMessage = resolveMessage(error);
+    ResponseManager.error(res, 'Error al crear el administrativo', errorMessage, StatusCodes.INTERNAL_SERVER_ERROR);
   }
 }
 
 async function update(req: Request, res: Response) {
-  try{
+  try {
     const id: string = req.params.id;
+
     const aService = new AdministrativeService(em);
     const administrative = await aService.update(id, req.body);
 
-    if(!administrative) {
-      res.status(StatusCodes.BAD_REQUEST).send({ message: 'No se pudo actualizar el administrativo' });
-      return;
-    }
-    res.status(StatusCodes.ACCEPTED).send({ message: 'Administrativo actualizado: ', data: administrative });
+    ResponseManager.success(res, administrative, 'Administrativo actualizado', StatusCodes.ACCEPTED);
   } catch (error) {
     logger.error(error);
 
-    res.status(StatusCodes.INTERNAL_SERVER_ERROR).send({
-      error: error instanceof Error ? error.message : 'Error al actualizar el administrativo'
-    });
+    const errorMessage = resolveMessage(error);
+    ResponseManager.error(
+      res,
+      'Error al actualizar el administrativo',
+      errorMessage,
+      StatusCodes.INTERNAL_SERVER_ERROR
+    );
   }
 }
 
 async function remove(req: Request, res: Response) {
-  try{
+  try {
     const id: string = req.params.id;
+
     const aService = new AdministrativeService(em);
     const administrative = await aService.remove(id);
 
-    if(!administrative) {
-      res.status(StatusCodes.NOT_FOUND).send({ message: 'No se pudo eliminar el administrativo' });
+    if (!administrative) {
+      ResponseManager.badRequest(res, 'No se pudo eliminar el administrativo');
       return;
     }
 
-    res.status(StatusCodes.ACCEPTED).send({ message: 'Administrativo eliminado: ' });
+    ResponseManager.success(res, null, 'Administrativo eliminado', StatusCodes.ACCEPTED);
   } catch (error) {
     logger.error(error);
 
-    res.status(StatusCodes.INTERNAL_SERVER_ERROR).send({
-      error: error instanceof Error ? error.message : 'Error al eliminar el administrativo'
-    });
+    const errorMessage = resolveMessage(error);
+    ResponseManager.error(res, 'Error al eliminar el administrativo', errorMessage, StatusCodes.INTERNAL_SERVER_ERROR);
   }
 }
 

@@ -26,7 +26,7 @@ export class Appointment {
   appointmentDate!: Date;
 
   @OneToMany(() => AppointmentStatus, (status) => status.appointment, { cascade: [Cascade.ALL] })
-  statusList = new Collection<AppointmentStatus>(this);
+  appointmentsStatus = new Collection<AppointmentStatus>(this);
 
   @ManyToOne(() => Patient)
   patient: Rel<Patient>;
@@ -48,14 +48,14 @@ export class Appointment {
 
   constructor(
     appointmentDate: Date,
-    statusList: Collection<AppointmentStatus>,
+    appointmentsStatus: Collection<AppointmentStatus>,
     patient: Rel<Patient>,
     medic: Rel<Medic>,
     administratives: Collection<Administrative>,
     practices: Collection<Practice>
   ) {
     this.appointmentDate = appointmentDate;
-    this.statusList = statusList;
+    this.appointmentsStatus = appointmentsStatus;
     this.patient = patient;
     this.medic = medic;
     this.administratives = administratives;

@@ -1,28 +1,52 @@
 import { orm } from '../shared/database/orm.js';
 import { Request, Response } from 'express';
-import { Appointment } from './appointment.entity.js';
 import { StatusCodes } from 'http-status-codes';
 import { logger } from '../shared/logger/logger.js';
 import { AppointmentService } from './appointment.service.js';
+import { ResponseManager } from '../shared/helpers/responseHelper.js';
+import { resolveMessage } from '../shared/errorManagment/appError.js';
 
 const em = orm.em.fork();
+
+// Ejemplo Query
+// GET http://localhost:3000/app/v1/appointment/findAppointmentByFilter?beforeDate=2026-01-16T09:30&afterDate=2026-01-12T09:30
+
+//De momento solo filtra por beforeDate y afterDate
+async function findAppointmentByFilter(req: Request, res: Response) {
+  try {
+    const appointmentService = new AppointmentService(em);
+    const appointments = await appointmentService.findAppointmentByFilter(req.query);
+
+    if (!appointments) {
+      ResponseManager.notFound(res, 'No se encontraron turnos');
+      return;
+    }
+
+    ResponseManager.success(res, appointments, 'Turnos obtenidos', StatusCodes.OK);
+  } catch (error) {
+    logger.error(error);
+
+    const errorMessage = resolveMessage(error);
+    ResponseManager.error(res, errorMessage, 'Error al obtener los turnos', StatusCodes.INTERNAL_SERVER_ERROR);
+  }
+}
 
 async function findAll(req: Request, res: Response) {
   try {
     const appointmentService = new AppointmentService(em);
     const appointments = await appointmentService.findAll();
 
-    if (!appointments || appointments.length === 0) {
-      res.status(StatusCodes.NOT_FOUND).send({ message: 'No se encontraron turnos' });
+    if (!appointments) {
+      ResponseManager.notFound(res, 'No se encontraron turnos');
       return;
     }
 
-    res.status(StatusCodes.OK).send({ message: 'Turnos encontrados', data: appointments });
+    ResponseManager.success(res, appointments, 'Turnos obtenidos', StatusCodes.OK);
   } catch (error) {
     logger.error(error);
-    res.status(StatusCodes.INTERNAL_SERVER_ERROR).send({
-      error: error instanceof Error ? error.message : 'Error al obtener los turnos'
-    });
+
+    const errorMessage = resolveMessage(error);
+    ResponseManager.error(res, errorMessage, 'Error al obtener los turnos', StatusCodes.INTERNAL_SERVER_ERROR);
   }
 }
 
@@ -33,76 +57,75 @@ async function findOne(req: Request, res: Response) {
     const appointment = await appointmentService.findOne(id);
 
     if (!appointment) {
-      res.status(StatusCodes.NOT_FOUND).send({ message: 'Turno no encontrado' });
+      ResponseManager.notFound(res, 'Turno no encontrado');
       return;
     }
 
-    res.status(StatusCodes.OK).send({ message: 'Turno encontrado', data: appointment });
+    ResponseManager.success(res, appointment, 'Turno encontrado', StatusCodes.OK);
   } catch (error) {
     logger.error(error);
-    res.status(StatusCodes.INTERNAL_SERVER_ERROR).send({
-      error: error instanceof Error ? error.message : 'Error al obtener el turno'
-    });
+
+    const errorMessage = resolveMessage(error);
+    ResponseManager.error(res, errorMessage, 'Error al obtener el turno', StatusCodes.INTERNAL_SERVER_ERROR);
   }
 }
 
 async function create(req: Request, res: Response) {
+  // TODO
+  // Ver si el primer estado de turno se tiene que crear desde el front o invocar acá
   try {
     const appointmentService = new AppointmentService(em);
     const appointment = await appointmentService.create(req.body);
 
     if (!appointment) {
-      res.status(StatusCodes.BAD_REQUEST).send({ message: 'No se pudo crear el turno' });
+      ResponseManager.badRequest(res, 'No se pudo crear el turno', '', StatusCodes.BAD_REQUEST);
       return;
     }
 
-    res.status(StatusCodes.CREATED).send({ message: 'Turno creado', data: appointment });
+    ResponseManager.success(res, appointment, 'Turno creado', StatusCodes.CREATED);
   } catch (error) {
     logger.error(error);
-    res.status(StatusCodes.INTERNAL_SERVER_ERROR).send({
-      error: error instanceof Error ? error.message : 'Error al crear el turno'
-    });
+
+    const errorMessage = resolveMessage(error);
+    ResponseManager.error(res, errorMessage, 'Error al crear el turno', StatusCodes.INTERNAL_SERVER_ERROR);
   }
 }
 
 async function update(req: Request, res: Response) {
   try {
     const id: string = req.params.id;
+
     const appointmentService = new AppointmentService(em);
     const appointment = await appointmentService.update(id, req.body);
 
-    if (!appointment) {
-      res.status(StatusCodes.BAD_REQUEST).send({ message: 'No se pudo actualizar el turno' });
-      return;
-    }
-
-    res.status(StatusCodes.OK).send({ message: 'Turno actualizado', data: appointment });
+    ResponseManager.success(res, appointment, 'Turno actualizado', StatusCodes.OK);
   } catch (error) {
     logger.error(error);
-    res.status(StatusCodes.INTERNAL_SERVER_ERROR).send({
-      error: error instanceof Error ? error.message : 'Error al actualizar el turno'
-    });
+
+    const errorMessage = resolveMessage(error);
+    ResponseManager.error(res, errorMessage, 'Error al actualizar el turno', StatusCodes.INTERNAL_SERVER_ERROR);
   }
 }
 
 async function remove(req: Request, res: Response) {
   try {
     const id: string = req.params.id;
+
     const appointmentService = new AppointmentService(em);
     const removed = await appointmentService.remove(id);
 
     if (!removed) {
-      res.status(StatusCodes.NOT_FOUND).send({ message: 'No se pudo eliminar el turno' });
+      ResponseManager.notFound(res, 'No se pudo eliminar el turno');
       return;
     }
 
-    res.status(StatusCodes.OK).send({ message: 'Turno eliminado' });
+    ResponseManager.success(res, null, 'Turno eliminado', StatusCodes.OK);
   } catch (error) {
     logger.error(error);
-    res.status(StatusCodes.INTERNAL_SERVER_ERROR).send({
-      error: error instanceof Error ? error.message : 'Error al eliminar el turno'
-    });
+
+    const errorMessage = resolveMessage(error);
+    ResponseManager.error(res, errorMessage, 'Error al eliminar el turno', StatusCodes.INTERNAL_SERVER_ERROR);
   }
 }
 
-export { findAll, findOne, create, update, remove };
+export { findAppointmentByFilter, findAll, findOne, create, update, remove };

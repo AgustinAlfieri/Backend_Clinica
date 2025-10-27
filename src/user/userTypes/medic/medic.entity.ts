@@ -8,17 +8,9 @@ export class Medic extends User {
   @Property({ unique: true })
   license!: string;
 
-  @ManyToMany(() => MedicalSpecialty, (medicalSpecialty) => medicalSpecialty.medicalProfessionals)
+  @ManyToMany(() => MedicalSpecialty, (medicalSpecialty) => medicalSpecialty.medics)
   medicalSpecialty = new Collection<MedicalSpecialty>(this);
 
   @OneToMany(() => Appointment, (appointment) => appointment.medic, { cascade: [Cascade.ALL] })
   appointments = new Collection<Appointment>(this);
-
-  // constructor(license: string, medicalSpecialty: Collection<MedicalSpecialty>, appointments: Collection<Appointment>)
-  // {
-  //   super();
-  //   this.license = license;
-  //   this.medicalSpecialty = medicalSpecialty;
-  //   this.appointments = appointments;
-  // }
 }

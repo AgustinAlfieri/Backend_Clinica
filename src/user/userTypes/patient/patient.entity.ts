@@ -5,7 +5,7 @@ import { MedicalInsurance } from '../../../medicalInsurance/medicalInsurance.ent
 
 @Entity()
 export class Patient extends User {
-  @Property({ nullable: true })
+  @Property({ nullable: true, unique: true })
   public insuranceNumber?: string | null;
 
   @ManyToOne(() => MedicalInsurance, { nullable: true })
