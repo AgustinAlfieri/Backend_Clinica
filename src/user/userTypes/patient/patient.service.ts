@@ -42,9 +42,6 @@ export class PatientService {
 
       //Si viene con obra social, la busco y asigno
       if (patient.medicalInsurance) {
-        //Por si eligió una obra social pero no ingresó numero de afiliado
-        if (!newPatient.insuranceNumber) throw new Error('Debe ingresar numero de afiliado de la obra social');
-
         const medicalInsurance = await _em.findOne(MedicalInsurance, patient.medicalInsurance);
 
         if (!medicalInsurance) throw new Error('La obra social no existe');
