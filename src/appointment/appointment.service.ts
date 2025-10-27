@@ -27,18 +27,26 @@ export class AppointmentService {
   async findAppointmentByFilter(filter: FilterParams): Promise<Appointment[]> {
     try {
       const _em = this.em.fork();
-
-      console.log('filter recibido en service:', JSON.stringify(filter, null, 2));
-
       const { beforeDate, afterDate, patientDni, typeAppointmentStatus } = filter;
 
       //Inicializo el QueryBuilder
       const qb = _em.createQueryBuilder(Appointment, 'a');
+      const knex = _em.getKnex();
 
       // Defino los datos que quiero (Quizas hay que traer menos)
       qb.select('a.*');
       qb.leftJoinAndSelect('a.patient', 'p');
       qb.leftJoinAndSelect('a.medic', 'm');
+
+      qb.leftJoinAndSelect(
+        'a.appointmentsStatus',
+        'as',
+        // Le decimos que SÓLO traiga el estado si cumple esta condición:
+        // La fecha del estado es la máxima PARA ESE TURNO (a.id)
+        { 'as.date': knex.raw('(SELECT MAX(as2.date) FROM appointment_status as2 WHERE as2.appointment_id = a.id)') }
+      );
+      // Hacemos join al tipo de estado DESDE el estado 'as' que ya filtramos
+      qb.leftJoinAndSelect('as.typeAppointmentStatus', 'tas');
 
       //Filtro por fechas
       if (beforeDate) {
@@ -53,16 +61,9 @@ export class AppointmentService {
         qb.andWhere({ 'p.dni': patientDni });
       }
 
-      // Filtro por el ÚLTIMO estado del turno
       if (typeAppointmentStatus) {
-        // Join Appointment -> AppointmentStatus -> TypeAppointmentStatus
-        qb.join('a.appointmentsStatus', 'as').join('as.typeAppointmentStatus', 'tas');
-
         // Busco por el nombre del tipo de estado (Ej: Solicitado)
         qb.andWhere({ 'tas.name': typeAppointmentStatus });
-
-        // Solo traer el 'as' (AppointmentStatus) más reciente para este turno 'a'.
-        qb.andWhere('as.date = (SELECT MAX(as2.date) FROM appointment_status as2 WHERE as2.appointment_id = a.id)');
       }
 
       //Ejecuto la query y traigo los resultados
