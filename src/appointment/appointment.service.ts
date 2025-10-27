@@ -36,7 +36,7 @@ export class AppointmentService {
       const qb = _em.createQueryBuilder(Appointment, 'a');
 
       // Defino los datos que quiero (Quizas hay que traer menos)
-      qb.select('a.*').distinct();
+      qb.select('a.*');
       qb.leftJoinAndSelect('a.patient', 'p');
       qb.leftJoinAndSelect('a.medic', 'm');
 
@@ -53,12 +53,16 @@ export class AppointmentService {
         qb.andWhere({ 'p.dni': patientDni });
       }
 
-      //Joins para tener el nombre del tipo de estado de turno
+      // Filtro por el ÚLTIMO estado del turno
       if (typeAppointmentStatus) {
         // Join Appointment -> AppointmentStatus -> TypeAppointmentStatus
         qb.join('a.appointmentsStatus', 'as').join('as.typeAppointmentStatus', 'tas');
-        //Busco por el nombre del tipo de estado (Ej: Solicitado)
+
+        // Busco por el nombre del tipo de estado (Ej: Solicitado)
         qb.andWhere({ 'tas.name': typeAppointmentStatus });
+
+        // Solo traer el 'as' (AppointmentStatus) más reciente para este turno 'a'.
+        qb.andWhere('as.date = (SELECT MAX(as2.date) FROM appointment_status as2 WHERE as2.appointment_id = a.id)');
       }
 
       //Ejecuto la query y traigo los resultados
