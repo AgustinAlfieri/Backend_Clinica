@@ -37,6 +37,4 @@ routerMedic.delete(
   validateInput({ location: 'params', schema: medicSchema }),
   remove
 );
-
-//Asumí que quien puede ver los medicos, puede ver su Schedule, pero habría que revisarlo
 routerMedic.get('/schedule/:id', authMiddleware('Medic', 'view'), getMedicSchedule);
