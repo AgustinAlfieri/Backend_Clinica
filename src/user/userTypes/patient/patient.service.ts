@@ -1,6 +1,6 @@
 import { Collection, EntityManager } from '@mikro-orm/mysql';
 import { Patient } from './patient.entity.js';
-import { comparePassword, DataNewUser, hashPassword } from '../../../shared/auth/auth.service.js';
+import { DataNewUser, hashPassword } from '../../../shared/auth/auth.service.js';
 import { MedicalInsurance } from '../../../medicalInsurance/medicalInsurance.entity.js';
 import { Role } from '../../../shared/enums/role.enum.js';
 import { logger } from '../../../shared/logger/logger.js';

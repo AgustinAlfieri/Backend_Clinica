@@ -107,6 +107,7 @@ export const login = async (credentials: userCredentials): Promise<AuthResponse>
   if (!password) {
     throw new Error('La contraseña es requerida');
   }
+
   //Veo que rol es, sino despues me da error de properties
   let userEntity;
   switch (role) {
@@ -154,8 +155,6 @@ export const login = async (credentials: userCredentials): Promise<AuthResponse>
 
 //Para registrar un nuevo usuario
 export const register = async (dataNewUser: DataNewUser): Promise<AuthResponse> => {
-  console.log(dataNewUser);
-
   const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 
   if (!emailRegex.test(dataNewUser.email)) {

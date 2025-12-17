@@ -1,5 +1,5 @@
 import { Request, Response, NextFunction } from 'express';
-import { PermissionManager } from '../permission/rolesPermission.js';
+import { PermissionManager } from '../helpers/permissionManager.js';
 
 declare module 'express' {
   export interface Request {

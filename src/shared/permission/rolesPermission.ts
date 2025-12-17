@@ -40,17 +40,3 @@ export const rolesPermissions: Record<string, Record<string, string[]>> = {
     AppointmentStatus: [actions.CREATE]
   }
 };
-
-export class PermissionManager {
-  static hasPermission(role: string, entity: string, action: string): boolean {
-    //Obtenemos los permisos del rol
-    const rolePermissions = rolesPermissions[role];
-
-    //Si el rol no existe o no tiene permisos para la entidad, juira
-    if (!rolePermissions || !rolePermissions[entity]) {
-      return false;
-    }
-
-    return rolePermissions[entity].includes(action);
-  }
-}
