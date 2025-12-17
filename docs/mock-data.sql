@@ -76,7 +76,7 @@ TRUNCATE TABLE type_appointment_status;
 -- TYPE_APPOINTMENT_STATUS
 INSERT INTO type_appointment_status (id, name) VALUES
 ('1', 'Solicitado'),
-('2', 'En sala de espera'),
+('2', 'En_sala_de_espera'),
 ('3', 'Completado'),
 ('4', 'Cancelado');
 
