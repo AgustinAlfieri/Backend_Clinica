@@ -20,6 +20,7 @@ export interface FilterParams {
   afterDate?: Date;
   typeAppointmentStatus?: string;
   patientDni?: string;
+  medicDni?: string;
 }
 
 export class AppointmentService {
@@ -27,7 +28,7 @@ export class AppointmentService {
   async findAppointmentByFilter(filter: FilterParams): Promise<Appointment[]> {
     try {
       const _em = this.em.fork();
-      const { beforeDate, afterDate, patientDni, typeAppointmentStatus } = filter;
+      const { beforeDate, afterDate, patientDni, typeAppointmentStatus, medicDni } = filter;
 
       //Inicializo el QueryBuilder
       const qb = _em.createQueryBuilder(Appointment, 'a');
@@ -64,6 +65,11 @@ export class AppointmentService {
       if (typeAppointmentStatus) {
         // Busco por el nombre del tipo de estado (Ej: Solicitado)
         qb.andWhere({ 'tas.name': typeAppointmentStatus });
+      }
+
+      // filtro por DNI del médico
+      if (medicDni) {
+        qb.andWhere({ 'm.dni': medicDni });
       }
 
       //Ejecuto la query y traigo los resultados
