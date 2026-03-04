@@ -27,6 +27,7 @@ export const rolesPermissions: Record<string, Record<string, string[]>> = {
     Patient: [actions.VIEW, actions.UPDATE],
     Medic: [actions.VIEW, actions.UPDATE],
     Appointment: [actions.CREATE, actions.UPDATE, actions.VIEW],
+    AppointmentStatus: [actions.CREATE, actions.VIEW],
     Practice: [actions.VIEW],
     TypeAppointmentStatus: [actions.UPDATE, actions.VIEW]
   },
