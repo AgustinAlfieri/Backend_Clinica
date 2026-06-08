@@ -38,6 +38,7 @@ export class AppointmentService {
       qb.select('a.*');
       qb.leftJoinAndSelect('a.patient', 'p');
       qb.leftJoinAndSelect('a.medic', 'm');
+      qb.leftJoinAndSelect('m.medicalSpecialty', 'ms');
 
       qb.leftJoinAndSelect(
         'a.appointmentsStatus',
@@ -86,7 +87,7 @@ export class AppointmentService {
       Appointment,
       {},
       {
-        populate: ['patient', 'medic', 'practices', 'administratives', 'appointmentsStatus']
+        populate: ['patient', 'medic.medicalSpecialty', 'practices', 'administratives', 'appointmentsStatus']
       }
     );
   }
@@ -94,7 +95,7 @@ export class AppointmentService {
   async findOne(id: string) {
     const _em = this.em.fork();
     return await _em.findOne(Appointment, id, {
-      populate: ['patient', 'medic', 'practices', 'administratives', 'appointmentsStatus']
+      populate: ['patient', 'medic.medicalSpecialty', 'practices', 'administratives', 'appointmentsStatus']
     });
   }
 
